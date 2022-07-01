@@ -224,7 +224,7 @@ func (self *mysqlSt) UseCond(fields []string, value interface{}, options... stri
 	for _, field := range fields {
 		field  = CamelCase(field) //转换成驼峰模式
 		valSt := elemSt.FieldByName(field)
-		if valSt.IsZero() {
+		if !valSt.IsValid() || valSt.IsZero() {
 			continue
 		}
 		data[field] = valSt.Interface()

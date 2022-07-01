@@ -148,7 +148,7 @@ func CamelCase(str string) string {
 			bstr[i+1] -= 32
 			i++
 		} else {//其它位置出现大写字母统一转小写
-			if bstr[i] >= 'A' && bstr[i] <= 'Z' {
+			if i != 0 && bstr[i] >= 'A' && bstr[i] <= 'Z' {
 				bstr[i] += 32
 			}
 		}
