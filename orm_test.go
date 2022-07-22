@@ -20,9 +20,16 @@ func TestMysql(t *testing.T) {
 
 	tsql := sqlSt.Clear().Table("test").UseCond([]string{"Name", "Tag", "Ename"}, &args, OP_NE, OP_OR).AsSql("SELECT")
 	t.Log(tsql)
+
+	tsql = sqlSt.Clear().Table("test").UseBatch([]string{"Name", "Tag", "Ename"}, "%leicc%", OP_LIKE, OP_OR).AsSql("SELECT")
+	t.Log(tsql)
+
 	sql := sqlSt.Clear().Table("test").Where("id", 1).AsSql("select")
 	t.Log(sql)
-	return
+
+	sql = sqlSt.Clear().Table("test").Where("id", 1).AsSql("delete")
+	t.Log(sql)
+
 	sql = sqlSt.Clear().Table("test").Value("id", 1).Value("name", "leicc").AsSql("insert")
 	t.Log(sql)
 
