@@ -1,6 +1,7 @@
 package cache
 
 import (
+	jsonIter "github.com/json-iterator/go"
 	"github.com/leicc520/go-orm/log"
 	"github.com/leicc520/go-orm/sqlmap"
 )
@@ -45,6 +46,7 @@ func ToStruct(in, out interface{}) error {
 }
 
 var gDrivers = map[string]IFactoryCache{}
+var json = jsonIter.ConfigCompatibleWithStandardLibrary
 
 //注册Cache到注册器中
 func Register(name string, driver IFactoryCache) {

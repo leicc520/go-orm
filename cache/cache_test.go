@@ -2,6 +2,7 @@ package cache
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -9,6 +10,39 @@ import (
 type DataSt struct {
 	Name string `json:"name"`
 	Demo int64 `json:"demo"`
+	Index int64 `json:"index"`
+}
+
+func TestJson(t *testing.T) {
+	stime := time.Now()
+	data := DataSt{Name: "leicc", Demo: 656}
+	//g := sync.WaitGroup{}
+	c := make(chan string, 1000)
+	for i := 0; i < 1000; i++ {
+		func(idx int, ch chan <- string) {
+			lstr, err := json.Marshal(data)
+			if err != nil {
+				t.Log(err)
+			}
+			c <- string(lstr)+":"+strconv.FormatInt(int64(idx), 10)
+		}(i, c)
+	}
+	nl := 0
+	time.Sleep(time.Second)
+	close(c)
+	for {
+		if lstr, ok := <-c; ok {
+			nl++
+
+			json.Unmarshal([]byte(lstr), &data)
+			data.Index = int64(nl)
+			fmt.Printf("%+v\r\n", data)
+		} else {
+			break
+		}
+	}
+	//close(c)
+	fmt.Println(nl, time.Since(stime))
 }
 
 func Test_mcache(t *testing.T) {

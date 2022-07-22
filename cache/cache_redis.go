@@ -1,11 +1,10 @@
 package cache
 
 import (
-	"encoding/json"
 	"time"
 
-	"github.com/leicc520/go-orm/log"
 	"github.com/go-redis/redis"
+	"github.com/leicc520/go-orm/log"
 )
 
 type FactoryRedisCache struct {

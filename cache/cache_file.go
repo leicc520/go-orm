@@ -2,7 +2,6 @@ package cache
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
