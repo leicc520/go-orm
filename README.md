@@ -275,3 +275,17 @@ func newDemoUser() *demoUser {
 	使用go plugins的话需要编译开启cgo的支持
 	CGO_ENABLED=1 go build -buildmode=plugin -o greeter.so main.go
 	CGO_ENABLED=1 go build -o main demo.go
+
+
+19、git免密push
+生成公钥-然后配置到githun->setting->ssh & GPG kyes->添加配置上去
+ssh-keygen -t ed25519 -C "xxx@xxx.com"
+或者
+ssh-keygen -t rsa -C "xxxxxx@yy.com"
+
+验证配置是否正确
+ssh -T git@github.com
+
+找到.gitconfig新增如下配置
+[url "https://github.com"]   
+    insteadOf = git://github.com
