@@ -286,6 +286,18 @@ ssh-keygen -t rsa -C "xxxxxx@yy.com"
 验证配置是否正确
 ssh -T git@github.com
 
-找到.gitconfig新增如下配置
-[url "https://github.com"]   
-    insteadOf = git://github.com
+找到.gitconfig新增如下配置,可以将https请求转换成ssh git请求
+[url "https://github.com/"]   
+    insteadOf="git@github.com:"
+
+解决no supported authentication methods avaiable
+在（小乌龟）向github远程推送文件的时候会报错 no supported authentication methods avaiable
+
+解决方法：因为git（小乌龟）和Git的冲突我们需要把乌龟git设置改正如下。
+
+找到TortoiseGit--》Settings（设置）--》Network（网络）
+
+将SSH client指向E:\git\Git\usr\bin\ssh.exe （我的Git工具安装E盘）
+
+这里更改ssh 路径的时候，要把上面的勾打上，点击应用，再确定
+
