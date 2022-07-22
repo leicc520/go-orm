@@ -25,32 +25,32 @@ const (
 )
 
 //根据逗号分割的id转slice
-func IdStr2Slice(idstr, seg, omit string) []string {
-	idstr  = strings.TrimSpace(idstr)
-	if len(idstr) < 1 {
+func IdStr2Slice(idStr, seg, omit string) []string {
+	idStr  = strings.TrimSpace(idStr)
+	if len(idStr) < 1 {
 		return []string{omit}
 	}
 	arstr := make([]string, 0)
-	tpstr := strings.Split(idstr, seg)
-	for _, idstr = range tpstr {//验证id是大于的记录
-		if n, err := strconv.ParseInt(idstr, 10, 64); err == nil && n > 0 {
-			arstr = append(arstr, idstr)
+	tpstr := strings.Split(idStr, seg)
+	for _, idStr = range tpstr {//验证id是大于的记录
+		if n, err := strconv.ParseInt(idStr, 10, 64); err == nil && n > 0 {
+			arstr = append(arstr, idStr)
 		}
 	}
 	return arstr
 }
 
 //简单的字符混淆
-func SwapStringCrypt(lstr string) string {
-	bstr  := []byte(lstr)
-	nsize := len(bstr) / 2
-	for i := 0; i < nsize; i++ {
+func SwapStringCrypt(lStr string) string {
+	bStr  := []byte(lStr)
+	nSize := len(bStr) / 2
+	for i := 0; i < nSize; i++ {
 		if i % 2 == 0 {
 			continue
 		}
-		bstr[i], bstr[nsize+i] = bstr[nsize+i], bstr[i]
+		bStr[i], bStr[nSize+i] = bStr[nSize+i], bStr[i]
 	}
-	return string(bstr)
+	return string(bStr)
 }
 
 //生成随机字符串

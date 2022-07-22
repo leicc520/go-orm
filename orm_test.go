@@ -2,11 +2,10 @@ package orm
 
 import (
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"reflect"
 	"testing"
 
-	_ "github.com/lib/pq"
+	"github.com/jmoiron/sqlx"
 )
 
 func TestMysql(t *testing.T) {
@@ -130,7 +129,7 @@ func TestModel(t *testing.T) {
 	InitDBPoolSt().Set(master.SKey, &master)
 	InitDBPoolSt().Set(slaver.SKey, &slaver)
 
-	CreatePSQLModels(master.SKey, slaver.SKey, "../models/sys")
+	CreatePGSQLModels(master.SKey, slaver.SKey, "../models/sys")
 	return
 	sorm := newDemoUser()
 

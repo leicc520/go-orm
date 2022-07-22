@@ -9,7 +9,6 @@ import (
 
 	"github.com/leicc520/go-orm/cache"
 	"github.com/leicc520/go-orm/log"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
