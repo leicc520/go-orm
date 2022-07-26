@@ -7,15 +7,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/leicc520/go-orm/cache"
 	"github.com/leicc520/go-orm/log"
-	"github.com/jmoiron/sqlx"
 )
 
 /******************************************************************************
 	     数据库的适配器，主要调整数据库与配置类 Redis与配置类的衔接，初始化数据库缓存
  ******************************************************************************/
 type XDBPoolSt struct {
+	mu sync.Mutex
 	dbs map[string]*sqlx.DB
 	config map[string]*DbConfig
 }
@@ -38,6 +39,7 @@ var (
 func InitDBPoolSt() *XDBPoolSt {
 	dbOnceLocker.Do(func() {
 		GdbPoolSt = XDBPoolSt{
+			mu: sync.Mutex{},
 			dbs: make(map[string]*sqlx.DB),
 			config: make(map[string]*DbConfig),
 		}
@@ -47,12 +49,16 @@ func InitDBPoolSt() *XDBPoolSt {
 
 //获取数据库连接句柄
 func (p *XDBPoolSt) Get(skey string) *sqlx.DB {
+	skey = strings.ToLower(skey)
 	if db, ok := p.dbs[skey]; ok && db != nil {
 		if err := db.Ping(); err != nil {
 			log.Write(log.ERROR, "数据库:"+skey+" Ping 失败:"+err.Error())
 		}
 		return db
 	}
+	//如果需要重新new对象的话要加一下锁 避免并发导致panic
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	db := p.NewEngine(skey)
 	p.dbs[skey] = db
 	return db
@@ -60,8 +66,11 @@ func (p *XDBPoolSt) Get(skey string) *sqlx.DB {
 
 //获取数据库连接句柄
 func (p *XDBPoolSt) Set(skey string, config *DbConfig) *sqlx.DB {
+	skey = strings.ToLower(skey)
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.config[skey] = config
-	db := p.NewEngine(skey)
+	db  := p.NewEngine(skey)
 	p.dbs[skey] = db
 	log.Write(log.DEBUG, "db load create database pool{", skey, "} ", config.Host)
 	return db
@@ -98,7 +107,6 @@ type Config struct {
 }
  */
 func (p *XDBPoolSt)LoadDbConfig(confPtr interface{}) {
-	SetCachePrefix("v01")
 	confValues := reflect.ValueOf(confPtr).Elem()
 	Alen := confValues.NumField()
 	for i := 0; i < Alen; i++ {
@@ -117,7 +125,7 @@ func (p *XDBPoolSt)LoadDbConfig(confPtr interface{}) {
 //加载数据库配置完成数据库的基础初始化业务逻辑
 func (p *XDBPoolSt)loadDBCache(i int, confValues reflect.Value, tempValues reflect.Value) {
 	if tempValues.Type().Name() == "DbConfig" {
-		key := strings.ToLower(confValues.Type().Field(i).Name)
+		key := confValues.Type().Field(i).Name
 		dbConfig := tempValues.Interface().(DbConfig)
 		if len(dbConfig.Driver) > 0 && len(dbConfig.Host) > 0 {
 			p.Set(key, &dbConfig)//创建数据库连接池处理逻辑

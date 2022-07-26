@@ -157,7 +157,7 @@ model配置主/从数据库的获取配置的key信息，update/inster/delete �
 			DbSlaver orm.DbConfig
 		}{"redis://:@127.0.0.1:6379/1", cacheSt, dbmaster, dbmaster}
 		orm.LoadDbConfig(config)//配置数据库结构注册到数据库调用配置当中
-		orm.CreateOrmModels("dbmaster", "dbslaver", "./models")
+		orm.CreateMYSQLModels("dbmaster", "dbslaver", "./models")
 	}
 
 数据库映射到代码的工具，将每个表生成model，放到指定的目录，提供给项目使用，配置Redis的话将会使用Redis作为缓存策略
