@@ -10,6 +10,14 @@ import (
 
 type SqlString string
 type SqlMap map[string]interface{}
+type SqlMapSliceSt []SqlMap
+
+//清理列表缓存的策略
+func (s SqlMapSliceSt) Clear()  {
+	for _, item := range s {
+		item.Clear()
+	}
+}
 
 //map 直接转成结构体返回
 func (s SqlMap) ToStruct(stPtr interface{}) error {
@@ -40,7 +48,10 @@ func (s SqlMap) Delete(keys... string) {
 
 //清空sqlmap
 func (s SqlMap) Clear() {
-	for key, _ := range s {
+	for key, val := range s {
+		if tmp, ok := val.(SqlMap); ok {
+			tmp.Clear()
+		}
 		delete(s, key)
 	}
 }
