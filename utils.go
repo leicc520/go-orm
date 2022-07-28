@@ -196,6 +196,16 @@ func GetLocalRandomIPv4() (string, error) {
 	return "", errors.New("local ip not exists!")
 }
 
+//启动之后写入pid file文件
+func WritePidFile(name string)  {
+	pidStr := strconv.FormatInt(int64(os.Getpid()), 10)
+	pidFile:= "/run/"+name+".pid"
+	if os.Getenv("DCENV") != "" {
+		pidFile = "/run/"+name+"-"+os.Getenv("DCENV")+".pid"
+	}
+	os.WriteFile(pidFile, []byte(pidStr), 0777)
+}
+
 //获取服务器panic 指定情况的获取写日志
 func RuntimeStack(skip int) []byte {
 	buf := new(bytes.Buffer)
