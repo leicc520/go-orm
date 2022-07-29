@@ -31,6 +31,7 @@ type DbConfig struct {
 
 var (
 	IsShowSql = true
+	IsDebug   = false
 	dbOnceLocker = sync.Once{}
 	GdbPoolSt = XDBPoolSt{}
 )

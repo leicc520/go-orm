@@ -558,7 +558,10 @@ func (q *mysqlSt) AsSql(mode string) string {
 		query = "DELETE FROM " + q.sqlTable(false) + q.sqlWhere()
 	}
 	if IsShowSql {
-		log.Write(log.DEBUG, q.RepSQL(query))
+		if IsDebug {//输出sql语句
+			fmt.Println(q.RepSQL(query))
+		}
+		log.Write(log.INFO, q.RepSQL(query))
 	}
 	return query
 }
@@ -591,6 +594,8 @@ func (q *mysqlSt) RepSQL(sql string) string {
 		lStr, ok := mark.(string)
 		if !ok {
 			lStr = fmt.Sprint(mark)
+		} else {//拼接上引号
+			lStr = "'"+lStr+"'"
 		}
 		lStr = strings.ReplaceAll(lStr,"?", "¤")
 		sql  = strings.Replace(sql, "?", lStr, 1)
