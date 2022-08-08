@@ -59,6 +59,26 @@ func Test_mcache(t *testing.T) {
 	err := cache.GetStruct("data", &data2)
 	fmt.Println(data2, err)
 	fmt.Println(cache)
+	
+	sliceSt := []string{"Demo", "demo2"}
+	cache.Set("sliceSt", sliceSt, 0)
+	
+	sliceV2 := make([]string, 0)
+	err = cache.GetStruct("sliceSt", &sliceV2)
+	fmt.Println(err, sliceV2)
+	
+}
+
+func BenchmarkName(b *testing.B) {
+	cache := Factory("memory", map[string]interface{}{"gc": time.Second*10})
+	for i := 0; i < b.N; i++ {
+		sliceSt := []string{"Demo", "demo2"}
+		cache.Set("sliceSt", sliceSt, 0)
+		
+		sliceV2 := make([]string, 0)
+		err := cache.GetStruct("sliceSt", &sliceV2)
+		fmt.Println(err, sliceV2)
+	}
 }
 
 func Test_fcache(t *testing.T) {
