@@ -62,9 +62,9 @@ func (self *MemoryCacheSt) GetStruct(key string, out interface{}) error {
 
 //设置一个缓存记录
 func (self *MemoryCacheSt) Set(key string, data interface{}, expire int64) bool {
-	ntime := time.Now().Unix()
-	if expire > 0 && expire < ntime {
-		expire += ntime
+	sTime := time.Now().Unix()
+	if expire > 0 && expire < sTime {
+		expire += sTime
 	}
 	item := CacheItemSt{Expire: expire, Data: data}
 	self.store.Store(key, item)
