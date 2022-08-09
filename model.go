@@ -22,17 +22,12 @@ const (
 var (
 	GdbCache cache.Cacher = nil
 	GmCache cache.Cacher = nil
-	GCacheKeyPrefix = "st"
+	GCacheKeyPrefix = "go"
 )
 
 //设置数据库缓存 -默认空不做缓存
 func SetDBCache(c cache.Cacher) {
 	GdbCache = c
-}
-
-//设置换成的前缀处理逻辑
-func SetCachePrefix(prefix string) {
-	GCacheKeyPrefix = prefix
 }
 
 //获取内存存储的缓存策略
