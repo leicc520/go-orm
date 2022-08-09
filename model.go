@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
+	
+	"github.com/jmoiron/sqlx"
 	"github.com/leicc520/go-orm/cache"
 	"github.com/leicc520/go-orm/log"
-	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -56,6 +56,11 @@ type ModelSt struct {
 	query   *QuerySt
 	dbctx   *XDBPoolSt
 	fields   map[string]reflect.Kind
+}
+
+//获取模型数据资料信息
+func (self *ModelSt) Instance() *ModelSt {
+	return self
 }
 
 //初始化模型 业务参数设定
