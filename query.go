@@ -404,17 +404,17 @@ func (q *QuerySt) GetMap(query string, offset, limit int64) SqlMap {
 	if limit != -1 {
 		query += q.sqlOffsetLimit(offset, limit)
 	}
-	strmap := make(SqlMap, 0)
+	data := make(SqlMap, 0)
 	if rows := q.query(query); rows != nil {
 		defer rows.Close()
 		for rows.Next() {
 			sliceKey := make(sql.RawBytes, 0)
 			sliceValue := make(sql.RawBytes, 0)
 			rows.Scan(&sliceKey, &sliceValue)
-			strmap[string(sliceKey)] = string(sliceValue)
+			data[string(sliceKey)] = string(sliceValue)
 		}
 	}
-	return strmap
+	return data
 }
 
 //获取数据信息到数组中
@@ -460,13 +460,13 @@ func (q *QuerySt) NameMap(query, key string, offset, limit int64) map[string]Sql
 //获取某个值信息
 func (q *QuerySt) GetValue() SqlString {
 	strVal := SqlString("")
-	query := q.AsSql("select") + " LIMIT 1"
+	query  := q.AsSql("select") + " LIMIT 1"
 	if rows := q.query(query); rows != nil {
 		defer rows.Close()
 		for rows.Next() {
 			sliceValue := make(sql.RawBytes, 0)
 			rows.Scan(&sliceValue)
-			strVal = SqlString(string(sliceValue))
+			strVal = SqlString(sliceValue)
 			break
 		}
 	}
