@@ -330,6 +330,13 @@ func (q *QuerySt) convertItem(fieldName string, value sql.RawBytes) interface{} 
 			return float32(data)
 		}
 		return data
+	case DT_TIMESTAMP:
+		if data, err := sqlTimeParse(str); err != nil {
+			log.Write(log.ERROR, "orm convertItem sqlTimeParse error "+err.Error())
+			return str
+		} else {//转换成功的情况
+			return data
+		}
 	}
 	return str
 }

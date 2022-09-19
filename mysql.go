@@ -41,6 +41,7 @@ const (
 	ASC           = "ASC"
 	DESC          = "DESC"
 	POSTGRES      = "postgres"
+	DT_TIMESTAMP  = 100
 )
 
 type tableSt struct {

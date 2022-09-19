@@ -211,6 +211,9 @@ func getFieldsString(field fieldSt) (string, string) {
 	} else if strings.Contains(tystr, "double") || strings.Contains(tystr, "float") || strings.Contains(tystr, "decimal") {
 		lstr += "reflect.Float64,"
 		sstr += "float64"
+	} else if strings.Contains(tystr, "timestamp") {
+		lstr += "orm.DT_TIMESTAMP,"
+		sstr += "time.Time"
 	} else {
 		lstr += "reflect.String,"
 		sstr += "string"

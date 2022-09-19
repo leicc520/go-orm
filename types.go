@@ -1,8 +1,11 @@
 package orm
 
 import (
+	"database/sql/driver"
 	"errors"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/leicc520/go-orm/log"
 	"github.com/leicc520/go-orm/sqlmap"
@@ -11,6 +14,26 @@ import (
 type SqlString string
 type SqlMap map[string]interface{}
 type SqlMapSliceSt []SqlMap
+type SqlTime time.Time
+
+//格式化输出日期 --实现数据库的Value接口
+func (t SqlTime) Value() (driver.Value, error) {
+	return time.Time(t).Format(DATEZONEFormat), nil
+}
+
+//格式化输出日期
+func (t SqlTime) String() string {
+	return time.Time(t).Format(DATEZONEFormat)
+}
+
+//格式化返回时间处理逻辑
+func sqlTimeParse(str string) (time.Time, error) {
+	if dTime, err := time.Parse(DATEZONEFormat, str); err == nil {
+		return dTime, err
+	}
+	//默认返回的结构体逻辑业务
+	return time.Parse(DATEBASICFormat, str)
+}
 
 //清理列表缓存的策略
 func (s SqlMapSliceSt) Clear()  {

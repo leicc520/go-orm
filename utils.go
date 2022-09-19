@@ -17,6 +17,7 @@ import (
 
 const (
 	DATEBASICFormat  = "2006-01-02 15:04:05"
+	DATEZONEFormat   = "2006-01-02T15:04:05Z"
 	DATEYMDFormat    = "20060102"
 	DATESTRFormat    = "20060102150405"
 	DATEYMDSTRFormat = "2006-01-02"
