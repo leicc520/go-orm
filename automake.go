@@ -254,6 +254,9 @@ func buildModels(packStr, dir, dbmaster, dbslaver string, model *modelSt) {
 		lstr = regexp.MustCompile("\"dbslaver\":\t\t\"[^\"]+\"").ReplaceAllString(lstr, rstr)
 	} else {//新生成数据的情况
 		lstr   = strings.Replace(Gmodelstpl, "{package}", packStr, -1)
+		if strings.Contains(strings.Join(vstr, ";"), "\ttime.Time\t") {//开启日期的包
+			lstr   = strings.Replace(lstr, "{time}", "\r\n\t\"time\"", -1)
+		}
 		lstr   = strings.Replace(lstr, "{gfields}", strings.Join(astr, "\n"), -1)
 		lstr   = strings.Replace(lstr, "{xfields}", strings.Join(vstr, "\n"), -1)
 		lstr   = strings.Replace(lstr, "{struct}", class, -1)
@@ -271,7 +274,7 @@ func buildModels(packStr, dir, dbmaster, dbslaver string, model *modelSt) {
 var Gmodelstpl = `package {package}
 
 import (
-	"reflect"
+	"reflect"{time}
 	"github.com/leicc520/go-orm"
 )
 
