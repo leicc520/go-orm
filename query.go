@@ -129,19 +129,12 @@ func (q *QuerySt) Exec(query string) sql.Result {
 
 //执行一条SQL语句
 func (q *QuerySt) queryRow(query string) *sql.Row {
-	var stmt *sql.Stmt = nil
-	var err error = nil
+	var result *sql.Row = nil
 	if q.sqlTx != nil {//如果开启了事务的情况
-		stmt, err = q.sqlTx.Prepare(query)
+		result = q.sqlTx.QueryRow(query, q.marks...)
 	} else {
-		stmt, err = q.sqlDb.Prepare(query)
+		result = q.sqlDb.QueryRow(query, q.marks...)
 	}
-	if err != nil {
-		log.Write(log.ERROR, "exec sql prepare:"+query+" failed "+err.Error())
-		return nil
-	}
-	defer stmt.Close()
-	result := stmt.QueryRow(q.marks...)
 	return result
 }
 
