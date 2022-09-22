@@ -301,6 +301,7 @@ func Decode(input interface{}, output interface{}) error {
 // WeaklyTypedInput. See DecoderConfig for more info.
 func WeakDecode(input, output interface{}) error {
 	config := &DecoderConfig{
+		DecodeHook: 	  StringToTimeHookFuncV2(),
 		Metadata:         nil,
 		Result:           output,
 		WeaklyTypedInput: true,

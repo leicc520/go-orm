@@ -25,15 +25,6 @@ func (t SqlTime) String() string {
 	return time.Time(t).Format(DATEZONEFormat)
 }
 
-//格式化返回时间处理逻辑
-func sqlTimeParse(str string) (time.Time, error) {
-	if dTime, err := time.Parse(DATEZONEFormat, str); err == nil {
-		return dTime, err
-	}
-	//默认返回的结构体逻辑业务
-	return time.Parse(DATEBASICFormat, str)
-}
-
 //清理列表缓存的策略
 func (s SqlMapSliceSt) Clear()  {
 	for _, item := range s {

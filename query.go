@@ -7,8 +7,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/leicc520/go-orm/log"
+	"github.com/leicc520/go-orm/sqlmap"
 )
-
 
 type FormatItemHandle func(sm SqlMap)
 type TransactionHandle func(st *QuerySt) bool
@@ -327,7 +327,7 @@ func (q *QuerySt) convertItem(fieldName string, value sql.RawBytes) interface{} 
 		if len(str) < 1 {
 			return nil
 		}
-		if data, err := sqlTimeParse(str); err != nil {
+		if data, err := sqlmap.StringToTimeStampParse(str); err != nil {
 			log.Write(log.ERROR, "orm convertItem sqlTimeParse error "+err.Error())
 			return str
 		} else {//转换成功的情况
