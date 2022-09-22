@@ -324,6 +324,9 @@ func (q *QuerySt) convertItem(fieldName string, value sql.RawBytes) interface{} 
 		}
 		return data
 	case DT_TIMESTAMP:
+		if len(str) < 1 {
+			return nil
+		}
 		if data, err := sqlTimeParse(str); err != nil {
 			log.Write(log.ERROR, "orm convertItem sqlTimeParse error "+err.Error())
 			return str
