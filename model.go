@@ -559,10 +559,12 @@ func (self *ModelSt) ChunkHandler(limit int64, fields string, cHandler CHandler,
 			}
 		}
 		offset += limit
+		if list != nil && len(list) > 0 {
+			nsize  += int64(len(list))
+		}
 		if list == nil || len(list) < int(limit) {
 			break
 		}
-		nsize += int64(len(list))
 	}
 	return nsize, err
 }
