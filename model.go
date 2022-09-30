@@ -43,6 +43,7 @@ type ModelSt struct {
 	table    string
 	orgtable string
 	prikey   string
+	uniq     string
 	dbmaster string
 	dbslaver string
 	cachever string
@@ -284,6 +285,12 @@ func (self *ModelSt) IdClearCache(id interface{}) *ModelSt {
 	return self
 }
 
+//替换导入的时候设置冲突唯一键字段，针对PG有效
+func (self *ModelSt) Conflict(fields string) *ModelSt {
+	self.uniq = fields
+	return self
+}
+
 //表中新增一条记录  主键冲突且设置dup的话会执行后续配置的更新操作
 func (self *ModelSt) NewOne(fields SqlMap, dupfields SqlMap) int64 {
 	db := self.dbctx.Get(self.dbmaster)
@@ -291,6 +298,9 @@ func (self *ModelSt) NewOne(fields SqlMap, dupfields SqlMap) int64 {
 	//设置插入主键冲突的时候使用更新字段信息
 	var priKeyValue interface{} = nil
 	if dupfields != nil && len(dupfields) > 0 {
+		if len(self.uniq) > 0 {//设置唯一约束
+			self.query.ConflictField(self.uniq)
+		}
 		for field, value := range dupfields {
 			if field == self.prikey {
 				priKeyValue = value
