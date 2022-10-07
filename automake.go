@@ -256,6 +256,8 @@ func buildModels(packStr, dir, dbmaster, dbslaver string, model *modelSt) {
 		lstr   = strings.Replace(Gmodelstpl, "{package}", packStr, -1)
 		if strings.Contains(strings.Join(vstr, ";"), "\ttime.Time\t") {//开启日期的包
 			lstr   = strings.Replace(lstr, "{time}", "\r\n\t\"time\"", -1)
+		} else {
+			lstr   = strings.Replace(lstr, "{time}", "", -1)
 		}
 		lstr   = strings.Replace(lstr, "{gfields}", strings.Join(astr, "\n"), -1)
 		lstr   = strings.Replace(lstr, "{xfields}", strings.Join(vstr, "\n"), -1)
