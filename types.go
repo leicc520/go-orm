@@ -47,6 +47,15 @@ func (s SqlMap) ToStruct(stPtr interface{}) error {
 //格式化处理逻辑
 func (s SqlMap) Merge(m SqlMap) SqlMap {
 	for key, val := range m {
+		//相同key的map直接覆盖合并
+		if vData, ok := val.(SqlMap); ok {
+			if eVal, ok := s[key]; ok {
+				if eData, ok := eVal.(SqlMap); ok {
+					s[key] = eData.Merge(vData)
+					continue
+				}
+			}
+		}
 		s[key] = val
 	}
 	return s
