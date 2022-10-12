@@ -25,8 +25,13 @@ type modelSt struct {
 	field   []fieldSt
 }
 
-//自动创建模型业务 DB隐射到Model
-func CreateMYSQLModels(dbmaster, dbslaver, gdir string) {
+// @Summary 自动创建模型业务 DB隐射到Model
+// @Tags 创建数据模型
+// @param dbmaster string 主数据库连接名称
+// @param dbslaver string 从数据库连接名称
+// @param gdir string 模型的存放路径
+// @param etables string 导致指定的表，默认空所有
+func CreateMYSQLModels(dbmaster, dbslaver, gdir, etables string) {
 	Gcolumnsql := "show full columns from %s"
 	Gtablesql  := "show tables"
 	if len(gdir) == 0 {
@@ -53,6 +58,9 @@ func CreateMYSQLModels(dbmaster, dbslaver, gdir string) {
 		tableSt.Scan(&model.table)
 		ok, err := regexp.MatchString(`[\d]$`, model.table)
 		if ok || err != nil {//直接跳过 不做处理
+			continue
+		}
+		if len(etables) > 0 && !strings.Contains(etables, model.table) {
 			continue
 		}
 		model.prikey = ""
@@ -92,8 +100,13 @@ func CreateMYSQLModels(dbmaster, dbslaver, gdir string) {
 	}
 }
 
-//自动创建模型业务 DB隐射到Model
-func CreatePGSQLModels(dbmaster, dbslaver, gdir string) {
+// @Summary 自动创建模型业务 DB隐射到Model
+// @Tags 创建数据模型
+// @param dbmaster string 主数据库连接名称
+// @param dbslaver string 从数据库连接名称
+// @param gdir string 模型的存放路径
+// @param etables string 导致指定的表，默认空所有
+func CreatePGSQLModels(dbmaster, dbslaver, gdir, etables string) {
 	Gcolumnsql := `
 SELECT a.column_name,a.data_type,a.column_default,b.description,c.ctype FROM information_schema.columns AS a LEFT JOIN (
 	SELECT A.attname, D.description FROM pg_class as C, pg_attribute as A, pg_description as D
@@ -133,7 +146,10 @@ WHERE a.table_schema='public' and a.table_name='%s'
 		tableSt.Scan(&model.table)
 		ok, err := regexp.MatchString(`[\d]$`, model.table)
 		if ok || err != nil {//直接跳过 不做处理
-			//continue
+			continue
+		}
+		if len(etables) > 0 && !strings.Contains(etables, model.table) {
+			continue
 		}
 		model.prikey = ""
 		model.field  = make([]fieldSt, 0)
