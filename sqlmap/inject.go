@@ -5,22 +5,23 @@ import (
 	"time"
 )
 
-//格式化返回时间处理逻辑
+// 格式化返回时间处理逻辑
 func StringToTimeStampParse(str string) (time.Time, error) {
 	if dTime, err := time.Parse("2006-01-02T15:04:05Z", str); err == nil {
-		return dTime, err
+		return dTime.Local(), nil
 	}
 	if dTime, err := time.Parse(time.RFC3339, str); err == nil {
-		return dTime, err
+		return dTime.Local(), nil
 	}
 	if dTime, err := time.Parse(time.RFC3339Nano, str); err == nil {
-		return dTime, err
+		return dTime.Local(), nil
 	}
 	if dTime, err := time.Parse("2006-01-02 15:04:05", str); err == nil {
-		return dTime, err
+		return dTime.Local(), nil
 	}
 	//默认返回的结构体逻辑业务
-	return time.Parse(time.RFC1123, str)
+	dTime, err := time.Parse(time.RFC1123, str)
+	return dTime.Local(), err
 }
 
 // StringToTimeHookFunc returns a DecodeHookFunc that converts
