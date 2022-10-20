@@ -20,9 +20,9 @@ type fieldSt struct {
 }
 
 type modelSt struct {
-	table   string
-	prikey  string
-	field   []fieldSt
+	table  string
+	prikey string
+	field  []fieldSt
 }
 
 // @Summary 自动创建模型业务 DB隐射到Model
@@ -33,7 +33,7 @@ type modelSt struct {
 // @param etables string 导致指定的表，默认空所有
 func CreateMYSQLModels(dbmaster, dbslaver, gdir, etables string) {
 	Gcolumnsql := "show full columns from %s"
-	Gtablesql  := "show tables"
+	Gtablesql := "show tables"
 	if len(gdir) == 0 {
 		gdir = "./models"
 	}
@@ -45,7 +45,7 @@ func CreateMYSQLModels(dbmaster, dbslaver, gdir, etables string) {
 	db := InitDBPoolSt().NewEngine(dbmaster)
 	tableSt, err := db.Query(Gtablesql)
 	if err != nil {
-		log.Write(log.ERROR, "sql query error "+Gtablesql + " "+err.Error())
+		log.Write(log.ERROR, "sql query error "+Gtablesql+" "+err.Error())
 		os.Exit(0)
 	}
 	defer func() {
@@ -57,18 +57,18 @@ func CreateMYSQLModels(dbmaster, dbslaver, gdir, etables string) {
 	for tableSt.Next() {
 		tableSt.Scan(&model.table)
 		ok, err := regexp.MatchString(`[\d]$`, model.table)
-		if ok || err != nil {//直接跳过 不做处理
+		if ok || err != nil { //直接跳过 不做处理
 			continue
 		}
 		if len(etables) > 0 && !strings.Contains(etables, model.table) {
 			continue
 		}
 		model.prikey = ""
-		model.field  = make([]fieldSt, 0)
+		model.field = make([]fieldSt, 0)
 		//提取表的字段信息
 		columnSt, _ := db.Query(fmt.Sprintf(Gcolumnsql, model.table))
 		columns, _ := columnSt.Columns()
-		values   := make([]sql.RawBytes, len(columns))
+		values := make([]sql.RawBytes, len(columns))
 		rowSlice := make([]interface{}, len(columns))
 		for idx := range values {
 			rowSlice[idx] = &values[idx]
@@ -121,7 +121,7 @@ SELECT a.column_name,a.data_type,a.column_default,b.description,c.ctype FROM inf
 	) AS c ON a.column_name=c.attname
 WHERE a.table_schema='public' and a.table_name='%s'
 `
-	Gtablesql  := "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
+	Gtablesql := "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 	if len(gdir) == 0 {
 		gdir = "./models"
 	}
@@ -133,7 +133,7 @@ WHERE a.table_schema='public' and a.table_name='%s'
 	db := InitDBPoolSt().NewEngine(dbmaster)
 	tableSt, err := db.Query(Gtablesql)
 	if err != nil {
-		log.Write(log.ERROR, "sql query error "+Gtablesql + " "+err.Error())
+		log.Write(log.ERROR, "sql query error "+Gtablesql+" "+err.Error())
 		os.Exit(0)
 	}
 	defer func() {
@@ -145,18 +145,18 @@ WHERE a.table_schema='public' and a.table_name='%s'
 	for tableSt.Next() {
 		tableSt.Scan(&model.table)
 		ok, err := regexp.MatchString(`[\d]$`, model.table)
-		if ok || err != nil {//直接跳过 不做处理
+		if ok || err != nil { //直接跳过 不做处理
 			continue
 		}
 		if len(etables) > 0 && !strings.Contains(etables, model.table) {
 			continue
 		}
 		model.prikey = ""
-		model.field  = make([]fieldSt, 0)
+		model.field = make([]fieldSt, 0)
 		query := fmt.Sprintf(Gcolumnsql, model.table, model.table, model.table)
 		columnSt, _ := db.Query(query)
 		columns, _ := columnSt.Columns()
-		values   := make([]sql.RawBytes, len(columns))
+		values := make([]sql.RawBytes, len(columns))
 		rowSlice := make([]interface{}, len(columns))
 		for idx := range values {
 			rowSlice[idx] = &values[idx]
@@ -165,7 +165,7 @@ WHERE a.table_schema='public' and a.table_name='%s'
 		for columnSt.Next() {
 			columnSt.Scan(rowSlice...)
 			field := fieldSt{}
-			priStr:= ""
+			priStr := ""
 			for idx, value := range values {
 				switch columns[idx] {
 				case "column_name":
@@ -178,15 +178,15 @@ WHERE a.table_schema='public' and a.table_name='%s'
 					priStr = string(value)
 				case "column_default":
 					cstr := string(value)
-					if strings.Index(cstr, "nextval") == 0{
-						model.prikey  = field.name
+					if strings.Index(cstr, "nextval") == 0 {
+						model.prikey = field.name
 					} else {
 						field.defualt = cstr
 					}
 				}
 			}
-			if priStr == "p" {//主键字段
-				model.prikey  = field.name
+			if priStr == "p" { //主键字段
+				model.prikey = field.name
 			}
 			model.field = append(model.field, field)
 		}
@@ -195,10 +195,10 @@ WHERE a.table_schema='public' and a.table_name='%s'
 	}
 }
 
-//获取结构体 数据资料信息
+// 获取结构体 数据资料信息
 func getFieldsString(field fieldSt) (string, string) {
-	lstr := "\t\t\""+field.name+"\":\t\t"
-	sstr := "\t"+CamelCase(strings.ReplaceAll(field.name, "-", "_"))+"\t\t"
+	lstr := "\t\t\"" + field.name + "\":\t\t"
+	sstr := "\t" + CamelCase(strings.ReplaceAll(field.name, "-", "_")) + "\t\t"
 	tystr := strings.ToLower(field.dtype)
 	if strings.Contains(tystr, "int") {
 		if strings.Contains(tystr, "unsigned") {
@@ -224,7 +224,7 @@ func getFieldsString(field fieldSt) (string, string) {
 				sstr += "int"
 			}
 		}
-	} else if strings.Contains(tystr, "double") || strings.Contains(tystr, "float") || strings.Contains(tystr, "decimal") {
+	} else if strings.Contains(tystr, "double") || strings.Contains(tystr, "float") || strings.Contains(tystr, "decimal") || strings.Contains(tystr, "numeric") {
 		lstr += "reflect.Float64,"
 		sstr += "float64"
 	} else if strings.Contains(tystr, "timestamp") {
@@ -234,55 +234,55 @@ func getFieldsString(field fieldSt) (string, string) {
 		lstr += "reflect.String,"
 		sstr += "string"
 	}
-	sstr += "\t\t`json:\""+field.name+"\"`\t\t"
-	lstr += "\t\t//"+strings.TrimSpace(field.comment)
+	sstr += "\t\t`json:\"" + field.name + "\"`\t\t"
+	lstr += "\t\t//" + strings.TrimSpace(field.comment)
 	return lstr, sstr
 }
 
 func buildModels(packStr, dir, dbmaster, dbslaver string, model *modelSt) {
 	class := CamelCase(model.table)
-	astr  := make([]string, 0, len(model.field))
-	vstr  := make([]string, 0, len(model.field))
+	astr := make([]string, 0, len(model.field))
+	vstr := make([]string, 0, len(model.field))
 	for idx, _ := range model.field {
 		tstr, sstr := getFieldsString(model.field[idx])
-		astr  = append(astr, tstr)
-		vstr  = append(vstr, sstr)
+		astr = append(astr, tstr)
+		vstr = append(vstr, sstr)
 	}
 	lstr, rstr := "", ""
-	gofile  := filepath.Join(dir, model.table+".go")
+	gofile := filepath.Join(dir, model.table+".go")
 	bstr, err := ioutil.ReadFile(gofile)
 	if err == nil && len(bstr) > 0 {
 		lstr = string(bstr)
 		lstr = regexp.MustCompile(",[\\s]*//[^\n]+").ReplaceAllString(lstr, rstr)
-		rstr = "reflect.Kind{\n"+strings.Join(astr, "\n")+ "\n\t}"
+		rstr = "reflect.Kind{\n" + strings.Join(astr, "\n") + "\n\t}"
 		lstr = regexp.MustCompile("reflect\\.Kind\\{[^\\}]+\\}").ReplaceAllString(lstr, rstr)
-		rstr = "St struct {\n"+strings.Join(vstr, "\n")+"\n}"
+		rstr = "St struct {\n" + strings.Join(vstr, "\n") + "\n}"
 		lstr = regexp.MustCompile("St[\\s]+struct[\\s]+\\{[^\\}]+\\}").ReplaceAllString(lstr, rstr)
-		rstr = "\"table\":\t\t\""+model.table+"\""
+		rstr = "\"table\":\t\t\"" + model.table + "\""
 		lstr = regexp.MustCompile("\"table\":\t\t\"[^\"]+\"").ReplaceAllString(lstr, rstr)
-		rstr = "\"orgtable\":\t\t\""+model.table+"\""
+		rstr = "\"orgtable\":\t\t\"" + model.table + "\""
 		lstr = regexp.MustCompile("\"orgtable\":\t\t\"[^\"]+\"").ReplaceAllString(lstr, rstr)
-		rstr = "\"prikey\":\t\t\""+model.prikey+"\""
+		rstr = "\"prikey\":\t\t\"" + model.prikey + "\""
 		lstr = regexp.MustCompile("\"prikey\":\t\t\"[^\"]+\"").ReplaceAllString(lstr, rstr)
-		rstr = "\"dbmaster\":\t\t\""+dbmaster+"\""
+		rstr = "\"dbmaster\":\t\t\"" + dbmaster + "\""
 		lstr = regexp.MustCompile("\"dbmaster\":\t\t\"[^\"]+\"").ReplaceAllString(lstr, rstr)
-		rstr = "\"dbslaver\":\t\t\""+dbslaver+"\""
+		rstr = "\"dbslaver\":\t\t\"" + dbslaver + "\""
 		lstr = regexp.MustCompile("\"dbslaver\":\t\t\"[^\"]+\"").ReplaceAllString(lstr, rstr)
-	} else {//新生成数据的情况
-		lstr   = strings.Replace(Gmodelstpl, "{package}", packStr, -1)
-		if strings.Contains(strings.Join(vstr, ";"), "\ttime.Time\t") {//开启日期的包
-			lstr   = strings.Replace(lstr, "{time}", "\r\n\t\"time\"", -1)
+	} else { //新生成数据的情况
+		lstr = strings.Replace(Gmodelstpl, "{package}", packStr, -1)
+		if strings.Contains(strings.Join(vstr, ";"), "\ttime.Time\t") { //开启日期的包
+			lstr = strings.Replace(lstr, "{time}", "\r\n\t\"time\"", -1)
 		} else {
-			lstr   = strings.Replace(lstr, "{time}", "", -1)
+			lstr = strings.Replace(lstr, "{time}", "", -1)
 		}
-		lstr   = strings.Replace(lstr, "{gfields}", strings.Join(astr, "\n"), -1)
-		lstr   = strings.Replace(lstr, "{xfields}", strings.Join(vstr, "\n"), -1)
-		lstr   = strings.Replace(lstr, "{struct}", class, -1)
-		lstr   = strings.Replace(lstr, "{table}", model.table, -1)
-		lstr   = strings.Replace(lstr, "{prikey}", model.prikey, -1)
-		lstr   = strings.Replace(lstr, "{dbmaster}", dbmaster, -1)
-		lstr   = strings.Replace(lstr, "{dbslaver}", dbslaver, -1)
-		lstr   = strings.Replace(lstr, "{dbslot}", "0", -1)
+		lstr = strings.Replace(lstr, "{gfields}", strings.Join(astr, "\n"), -1)
+		lstr = strings.Replace(lstr, "{xfields}", strings.Join(vstr, "\n"), -1)
+		lstr = strings.Replace(lstr, "{struct}", class, -1)
+		lstr = strings.Replace(lstr, "{table}", model.table, -1)
+		lstr = strings.Replace(lstr, "{prikey}", model.prikey, -1)
+		lstr = strings.Replace(lstr, "{dbmaster}", dbmaster, -1)
+		lstr = strings.Replace(lstr, "{dbslaver}", dbslaver, -1)
+		lstr = strings.Replace(lstr, "{dbslot}", "0", -1)
 	}
 	os.Remove(gofile)
 	ioutil.WriteFile(gofile, []byte(lstr), 0777)
@@ -325,4 +325,3 @@ func New{struct}() *{struct} {
 	return data
 }
 `
-
