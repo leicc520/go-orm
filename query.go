@@ -22,58 +22,64 @@ type QuerySt struct {
 	sqlTx    *sqlx.Tx
 }
 
-//定义注册到条件的数据资料信息
+// 定义注册到条件的数据资料信息
 type WHandler func(st *QuerySt) string
 type VHandler func(st *QuerySt) *QuerySt
 type DHandler func(st *QuerySt) interface{}
 type CHandler func([]SqlMap) error //执行业务分页的执行业务逻辑
 
-//生成一个查询Session
+// 生成一个查询Session
 func NewQuery(fields map[string]reflect.Kind) *QuerySt {
 	query := &QuerySt{&mysqlSt{}, nil, "", fields, nil, nil}
 	query.Reset()
 	return query
 }
 
-//主要用作处理数据的格式化逻辑
+// 主要用作处理数据的格式化逻辑
 func (q *QuerySt) SetFormat(handle FormatItemHandle) {
 	q.format = handle
 }
 
-//主要用作处理数据的格式化逻辑
+// 主要用作处理数据的格式化逻辑
 func (q *QuerySt) GetFormat() FormatItemHandle {
 	return q.format
 }
 
-//主要用作自增字段，插入返回自增ID
+// 主要用作自增字段，插入返回自增ID
 func (q *QuerySt) SetAutoIncr(field string) *QuerySt {
-	q.autoIncr = field
+	if vType, ok := q.fields[field]; ok {
+		if vType == reflect.String {
+			return q
+		}
+		//只有整数支持适配自增ID
+		q.autoIncr = field
+	}
 	return q
 }
 
-//获取当前执行的查询DB信息 需要及时释放，否则有问题
+// 获取当前执行的查询DB信息 需要及时释放，否则有问题
 func (q *QuerySt) GetDb() *sqlx.DB {
 	return q.sqlDb
 }
 
-//获取当前执行的查询DB信息 需要及时释放，否则有问题
+// 获取当前执行的查询DB信息 需要及时释放，否则有问题
 func (q *QuerySt) SetDb(db *sqlx.DB) *QuerySt {
 	q.sqlDb = db
 	return q
 }
 
-//获取当前执行的查询DB信息 需要及时释放，否则有问题
+// 获取当前执行的查询DB信息 需要及时释放，否则有问题
 func (q *QuerySt) GetTx() *sqlx.Tx {
 	return q.sqlTx
 }
 
-//获取当前执行的查询DB信息 需要及时释放，否则有问题
+// 获取当前执行的查询DB信息 需要及时释放，否则有问题
 func (q *QuerySt) SetTx(tx *sqlx.Tx) *QuerySt {
 	q.sqlTx = tx
 	return q
 }
 
-//执行事务处理的业务逻辑封装
+// 执行事务处理的业务逻辑封装
 func (q *QuerySt) Transaction(handle TransactionHandle) bool {
 	var err error = nil
 	q.sqlTx, err = q.GetDb().Beginx()
@@ -97,7 +103,7 @@ func (q *QuerySt) Transaction(handle TransactionHandle) bool {
 	return true
 }
 
-//获取当前执行的查询DB信息
+// 获取当前执行的查询DB信息
 func (q *QuerySt) CloseDB() {
 	if q.sqlDb != nil {
 		q.sqlDb.Close()
@@ -105,11 +111,11 @@ func (q *QuerySt) CloseDB() {
 	}
 }
 
-//执行一条SQL语句
+// 执行一条SQL语句
 func (q *QuerySt) Exec(query string) sql.Result {
 	var stmt *sql.Stmt = nil
 	var err error = nil
-	if q.sqlTx != nil {//如果开启了事务的情况
+	if q.sqlTx != nil { //如果开启了事务的情况
 		stmt, err = q.sqlTx.Prepare(query)
 	} else {
 		stmt, err = q.sqlDb.Prepare(query)
@@ -127,10 +133,10 @@ func (q *QuerySt) Exec(query string) sql.Result {
 	return result
 }
 
-//执行一条SQL语句
+// 执行一条SQL语句
 func (q *QuerySt) queryRow(query string) *sql.Row {
 	var result *sql.Row = nil
-	if q.sqlTx != nil {//如果开启了事务的情况
+	if q.sqlTx != nil { //如果开启了事务的情况
 		result = q.sqlTx.QueryRow(query, q.marks...)
 	} else {
 		result = q.sqlDb.QueryRow(query, q.marks...)
@@ -138,7 +144,7 @@ func (q *QuerySt) queryRow(query string) *sql.Row {
 	return result
 }
 
-//执行数据插入
+// 执行数据插入
 func (q *QuerySt) Insert(fields SqlMap, isReplace bool) int64 {
 	q.SetIsReplace(isReplace) //替换插入数据
 	if fields != nil && len(fields) > 0 {
@@ -150,24 +156,24 @@ func (q *QuerySt) Insert(fields SqlMap, isReplace bool) int64 {
 	return q.QueryInsert(query) //查询插入数据库
 }
 
-//查询插入数据库-直接执行sql插入处理逻辑
+// 查询插入数据库-直接执行sql插入处理逻辑
 func (q *QuerySt) QueryInsert(query string) int64 {
 	var lastId int64 = -1
-	if q.GetDriver() == POSTGRES {//如果是pg数据库的情况
-		if len(q.autoIncr) > 0 {//设置返回自增ID
-			query += " RETURNING "+q.autoIncr
+	if q.GetDriver() == POSTGRES { //如果是pg数据库的情况
+		if len(q.autoIncr) > 0 { //设置返回自增ID
+			query += " RETURNING " + q.autoIncr
 			if result := q.queryRow(query); result != nil {
 				if err := result.Scan(&lastId); err != nil {
 					log.Write(log.ERROR, err, query)
 					lastId = -1
 				}
 			}
-		} else {//普通的插入 不用返回自增ID
+		} else { //普通的插入 不用返回自增ID
 			if result := q.Exec(query); result != nil {
 				lastId, _ = result.RowsAffected()
 			}
 		}
-	} else {//mysql的执行逻辑
+	} else { //mysql的执行逻辑
 		if result := q.Exec(query); result != nil {
 			lastId, _ = result.LastInsertId()
 		}
@@ -175,7 +181,7 @@ func (q *QuerySt) QueryInsert(query string) int64 {
 	return lastId
 }
 
-//执行数据更新操作
+// 执行数据更新操作
 func (q *QuerySt) Update(fields SqlMap) int64 {
 	if fields != nil && len(fields) > 0 {
 		for field, value := range fields {
@@ -195,7 +201,7 @@ func (q *QuerySt) Update(fields SqlMap) int64 {
 	}
 }
 
-//执行数据删除操作
+// 执行数据删除操作
 func (q *QuerySt) Delete() int64 {
 	query := q.AsSql("delete")
 	if result := q.Exec(query); result == nil {
@@ -206,11 +212,11 @@ func (q *QuerySt) Delete() int64 {
 	}
 }
 
-//执行一次SQL查询
+// 执行一次SQL查询
 func (q *QuerySt) query(query string) *sql.Rows {
 	var rows *sql.Rows = nil
 	var err error = nil
-	if q.sqlTx != nil {//如果开启了事务的情况
+	if q.sqlTx != nil { //如果开启了事务的情况
 		rows, err = q.sqlTx.Query(query, q.marks...)
 	} else {
 		rows, err = q.sqlDb.Query(query, q.marks...)
@@ -222,7 +228,7 @@ func (q *QuerySt) query(query string) *sql.Rows {
 	return rows
 }
 
-//获取数据信息到数组中
+// 获取数据信息到数组中
 func (q *QuerySt) fetch(rows *sql.Rows, isFirst bool) []SqlMap {
 	defer func() {
 		if rows != nil {
@@ -258,10 +264,10 @@ func (q *QuerySt) fetch(rows *sql.Rows, isFirst bool) []SqlMap {
 	return list
 }
 
-//对查询的字段进行字符转义
+// 对查询的字段进行字符转义
 func (q *QuerySt) convertItem(fieldName string, value sql.RawBytes) interface{} {
 	str := string(value)
-	if q.fields == nil {//默认直接转字符串
+	if q.fields == nil { //默认直接转字符串
 		return str
 	}
 	dtType, ok := q.fields[fieldName]
@@ -287,7 +293,7 @@ func (q *QuerySt) convertItem(fieldName string, value sql.RawBytes) interface{} 
 			return uint16(data)
 		} else if dtType == reflect.Uint32 {
 			return uint32(data)
-		} else {//默认长整数 直接返回字符串类别
+		} else { //默认长整数 直接返回字符串类别
 			return strconv.FormatUint(data, 10)
 		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -307,7 +313,7 @@ func (q *QuerySt) convertItem(fieldName string, value sql.RawBytes) interface{} 
 			return int16(data)
 		} else if dtType == reflect.Int32 {
 			return int32(data)
-		} else {//直接返回字符串类别
+		} else { //直接返回字符串类别
 			return strconv.FormatInt(data, 10)
 		}
 	case reflect.Float64, reflect.Float32:
@@ -330,19 +336,19 @@ func (q *QuerySt) convertItem(fieldName string, value sql.RawBytes) interface{} 
 		if data, err := sqlmap.StringToTimeStampParse(str); err != nil {
 			log.Write(log.ERROR, "orm convertItem sqlTimeParse error "+err.Error())
 			return str
-		} else {//转换成功的情况
+		} else { //转换成功的情况
 			return data
 		}
 	}
 	return str
 }
 
-//如果查不到记录返回nil
+// 如果查不到记录返回nil
 func (q *QuerySt) GetRow(query string) SqlMap {
-	if query == "" {//为空的情况
+	if query == "" { //为空的情况
 		query = q.AsSql("select")
 	}
-	query   += " LIMIT 1"
+	query += " LIMIT 1"
 	if rows := q.query(query); rows != nil {
 		list := q.fetch(rows, true)
 		if len(list) >= 1 {
@@ -352,9 +358,9 @@ func (q *QuerySt) GetRow(query string) SqlMap {
 	return nil
 }
 
-//获取数据信息列表
+// 获取数据信息列表
 func (q *QuerySt) GetList(query string, offset, limit int64) []SqlMap {
-	if query == "" {//为空的情况
+	if query == "" { //为空的情况
 		query = q.AsSql("select")
 	}
 	if limit != -1 {
@@ -367,7 +373,7 @@ func (q *QuerySt) GetList(query string, offset, limit int64) []SqlMap {
 	return nil
 }
 
-//通过sql语句查询
+// 通过sql语句查询
 func (q *QuerySt) GetAsSql(query string, isFirst bool, offset, limit int64) []SqlMap {
 	if limit != -1 {
 		query += q.sqlOffsetLimit(offset, limit)
@@ -379,9 +385,9 @@ func (q *QuerySt) GetAsSql(query string, isFirst bool, offset, limit int64) []Sq
 	return nil
 }
 
-//获取单列信息
+// 获取单列信息
 func (q *QuerySt) GetColumn(query string, offset, limit int64) []string {
-	if query == "" {//记录为空的情况
+	if query == "" { //记录为空的情况
 		query = q.AsSql("select")
 	}
 	if limit != -1 {
@@ -399,9 +405,9 @@ func (q *QuerySt) GetColumn(query string, offset, limit int64) []string {
 	return column
 }
 
-//获取单列信息 请求设置field 必须 `key`,val结构
+// 获取单列信息 请求设置field 必须 `key`,val结构
 func (q *QuerySt) GetMap(query string, offset, limit int64) SqlMap {
-	if query == "" {//记录为空的情况
+	if query == "" { //记录为空的情况
 		query = q.AsSql("select")
 	}
 	if limit != -1 {
@@ -420,9 +426,9 @@ func (q *QuerySt) GetMap(query string, offset, limit int64) SqlMap {
 	return data
 }
 
-//获取数据信息到数组中
+// 获取数据信息到数组中
 func (q *QuerySt) NameMap(query, key string, offset, limit int64) map[string]SqlMap {
-	if query == "" {//记录为空的情况
+	if query == "" { //记录为空的情况
 		query = q.AsSql("select")
 	}
 	if limit != -1 {
@@ -432,7 +438,7 @@ func (q *QuerySt) NameMap(query, key string, offset, limit int64) map[string]Sql
 	if rows := q.query(query); rows != nil {
 		defer rows.Close()
 		columns, _ := rows.Columns()
-		values   := make([]sql.RawBytes, len(columns))
+		values := make([]sql.RawBytes, len(columns))
 		rowSlice := make([]interface{}, len(columns))
 		for i := range values {
 			rowSlice[i] = &values[i]
@@ -460,10 +466,10 @@ func (q *QuerySt) NameMap(query, key string, offset, limit int64) map[string]Sql
 	return nMap
 }
 
-//获取某个值信息
+// 获取某个值信息
 func (q *QuerySt) GetValue() SqlString {
 	strVal := SqlString("")
-	query  := q.AsSql("select") + " LIMIT 1"
+	query := q.AsSql("select") + " LIMIT 1"
 	if rows := q.query(query); rows != nil {
 		defer rows.Close()
 		for rows.Next() {
