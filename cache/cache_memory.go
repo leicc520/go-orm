@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leicc520/go-orm/log"
+	"git.ziniao.com/webscraper/go-orm/log"
 )
 
 type FactoryMemoryCache struct {
@@ -23,18 +23,18 @@ func init() {
 }
 
 type MemoryCacheSt struct {
-	store  sync.Map
-	gc     time.Duration
+	store sync.Map
+	gc    time.Duration
 }
 
-//初始化一个Cache实例
+// 初始化一个Cache实例
 func NewMemoryCache(gc time.Duration) *MemoryCacheSt {
 	cache := &MemoryCacheSt{gc: gc}
 	time.AfterFunc(cache.gc, cache.GC)
 	return cache
 }
 
-//获取一个缓存记录信息，过期记录不返回
+// 获取一个缓存记录信息，过期记录不返回
 func (self *MemoryCacheSt) Get(key string) interface{} {
 	data, exists := self.store.Load(key)
 	if !exists {
@@ -50,17 +50,17 @@ func (self *MemoryCacheSt) Get(key string) interface{} {
 	}
 }
 
-//直接获取数据并解析到结构当中
+// 直接获取数据并解析到结构当中
 func (self *MemoryCacheSt) GetStruct(key string, out interface{}) error {
 	data := self.Get(key) //获取数据
-	if data == nil {//数据不存在的情况
+	if data == nil {      //数据不存在的情况
 		return ErrNotExists{}
 	}
 	err := ToStruct(data, out)
 	return err
 }
 
-//设置一个缓存记录
+// 设置一个缓存记录
 func (self *MemoryCacheSt) Set(key string, data interface{}, expire int64) bool {
 	sTime := time.Now().Unix()
 	if expire > 0 && expire < sTime {
@@ -71,7 +71,7 @@ func (self *MemoryCacheSt) Set(key string, data interface{}, expire int64) bool 
 	return true
 }
 
-//删除缓存记录信息
+// 删除缓存记录信息
 func (self *MemoryCacheSt) Del(keys ...string) bool {
 	for i := 0; i < len(keys); i++ {
 		self.store.Delete(keys[i])
@@ -79,7 +79,7 @@ func (self *MemoryCacheSt) Del(keys ...string) bool {
 	return true
 }
 
-//清理内存缓存记录
+// 清理内存缓存记录
 func (self *MemoryCacheSt) Clear() {
 	self.store.Range(func(key, _ interface{}) bool {
 		self.store.Delete(key)
@@ -87,13 +87,13 @@ func (self *MemoryCacheSt) Clear() {
 	})
 }
 
-//清理内存缓存记录
+// 清理内存缓存记录
 func (self *MemoryCacheSt) Close() {
 	self.gc = -1
 	self.Clear()
 }
 
-//GC过期资源回收
+// GC过期资源回收
 func (self *MemoryCacheSt) GC() {
 	ntime := time.Now().Unix()
 	self.store.Range(func(key, value interface{}) bool {
@@ -106,8 +106,8 @@ func (self *MemoryCacheSt) GC() {
 		}
 		return true
 	})
-	log.Write(log.INFO,"memory cache GC ending")
-	if self.gc > 0 {//配置gc循环执行时间
+	log.Write(log.INFO, "memory cache GC ending")
+	if self.gc > 0 { //配置gc循环执行时间
 		time.AfterFunc(self.gc, self.GC)
 	}
 }

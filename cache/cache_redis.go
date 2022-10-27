@@ -3,8 +3,8 @@ package cache
 import (
 	"time"
 
+	"git.ziniao.com/webscraper/go-orm/log"
 	"github.com/go-redis/redis"
-	"github.com/leicc520/go-orm/log"
 )
 
 type FactoryRedisCache struct {
@@ -12,7 +12,7 @@ type FactoryRedisCache struct {
 
 func (factory *FactoryRedisCache) Open(params interface{}) Cacher {
 	args, ok := params.(string)
-	if !ok {//数据出错的情况处理逻辑
+	if !ok { //数据出错的情况处理逻辑
 		panic("redis cache Open failed")
 	}
 	cache := NewRedisCache(args)
@@ -44,7 +44,7 @@ func NewRedisCache(dsn string) *RedisCacheSt {
 //线程安全获取记录
 func (self *RedisCacheSt) asyncGet(key string) []byte {
 	byteStr, err := self.client.Get(key).Bytes()
-	if err != nil {//数据不存在的情况
+	if err != nil { //数据不存在的情况
 		if err != redis.Nil {
 			log.Write(log.ERROR, "redis get error "+err.Error())
 		}
@@ -75,7 +75,7 @@ func (self *RedisCacheSt) Get(key string) interface{} {
 //直接获取数据并解析到结构当中
 func (self *RedisCacheSt) GetStruct(key string, out interface{}) error {
 	data := self.Get(key) //获取数据
-	if data == nil {//数据不存在的情况
+	if data == nil {      //数据不存在的情况
 		return ErrNotExists{}
 	}
 	err := ToStruct(data, out)
@@ -83,8 +83,8 @@ func (self *RedisCacheSt) GetStruct(key string, out interface{}) error {
 }
 
 //线程安全获取记录
-func (self *RedisCacheSt) asyncSet(key string, byteStr []byte, exp int64)  bool {
-	result, expire := true, time.Duration(exp) * time.Second
+func (self *RedisCacheSt) asyncSet(key string, byteStr []byte, exp int64) bool {
+	result, expire := true, time.Duration(exp)*time.Second
 	if err := self.client.Set(key, byteStr, expire).Err(); err != nil {
 		log.Write(log.ERROR, "redis client Set error "+err.Error())
 		result = false
@@ -130,5 +130,3 @@ func (self *RedisCacheSt) Clear() {
 func (self *RedisCacheSt) Close() {
 	self.client.Close()
 }
-
-

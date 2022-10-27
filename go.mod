@@ -1,4 +1,4 @@
-module github.com/leicc520/go-orm
+module git.ziniao.com/webscraper/go-orm
 
 go 1.16
 

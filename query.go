@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strconv"
 
+	"git.ziniao.com/webscraper/go-orm/log"
+	"git.ziniao.com/webscraper/go-orm/sqlmap"
 	"github.com/jmoiron/sqlx"
-	"github.com/leicc520/go-orm/log"
-	"github.com/leicc520/go-orm/sqlmap"
 )
 
 type FormatItemHandle func(sm SqlMap)

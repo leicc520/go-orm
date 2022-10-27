@@ -10,14 +10,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leicc520/go-orm/log"
+	"git.ziniao.com/webscraper/go-orm/log"
 )
 
 var GFileCacheDir = ""
+
 type FactoryFileCache struct {
 }
 
-//获取缓存日志配置信息
+// 获取缓存日志配置信息
 func (factory *FactoryFileCache) Open(params interface{}) Cacher {
 	dirPath, dirDept := "./cache", 1
 	if dirConfig, ok := params.(map[string]interface{}); ok {
@@ -48,12 +49,12 @@ type FileCacheSt struct {
 	dirDept int
 }
 
-//初始化一个Cache实例
+// 初始化一个Cache实例
 func NewFileCache(dir string, dirDept int) *FileCacheSt {
 	if dirDept < 1 || dirDept > 5 {
 		dirDept = 1
 	}
-	if len(GFileCacheDir) > 0 {//有配置缓存地址的情况
+	if len(GFileCacheDir) > 0 { //有配置缓存地址的情况
 		dir = GFileCacheDir
 	}
 	if _, err := os.Stat(dir); err != nil {
@@ -63,11 +64,11 @@ func NewFileCache(dir string, dirDept int) *FileCacheSt {
 	return cache
 }
 
-//定位Key映射到的目录文件
+// 定位Key映射到的目录文件
 func (self *FileCacheSt) matchFile(key string) string {
 	npos := strings.IndexByte(key, '@')
-	dir  := self.dir
-	if npos > 3 {//切一级目录
+	dir := self.dir
+	if npos > 3 { //切一级目录
 		dir = filepath.Join(dir, key[0:npos])
 	}
 	md5Str := fmt.Sprintf("%x", md5.Sum([]byte(key)))
@@ -75,12 +76,12 @@ func (self *FileCacheSt) matchFile(key string) string {
 		seg := i * 3
 		dir = filepath.Join(dir, md5Str[seg:seg+3])
 	}
-	os.MkdirAll(dir,0777)
+	os.MkdirAll(dir, 0777)
 	file := filepath.Join(dir, key)
 	return file
 }
 
-//获取一个缓存记录信息，过期记录不返回
+// 获取一个缓存记录信息，过期记录不返回
 func (self *FileCacheSt) Get(key string) interface{} {
 	var item CacheItemSt
 	file := self.matchFile(key)
@@ -100,19 +101,19 @@ func (self *FileCacheSt) Get(key string) interface{} {
 	return item.Data
 }
 
-//直接获取数据并解析到结构当中
+// 直接获取数据并解析到结构当中
 func (self *FileCacheSt) GetStruct(key string, out interface{}) error {
 	data := self.Get(key) //获取数据
-	if data == nil {//数据不存在的情况
+	if data == nil {      //数据不存在的情况
 		return ErrNotExists{}
 	}
 	err := ToStruct(data, out)
 	return err
 }
 
-//设置一个缓存记录
+// 设置一个缓存记录
 func (self *FileCacheSt) Set(key string, data interface{}, expire int64) bool {
-	file  := self.matchFile(key)
+	file := self.matchFile(key)
 	ntime := time.Now().Unix()
 	if expire > 0 && expire < ntime {
 		expire += ntime
@@ -131,7 +132,7 @@ func (self *FileCacheSt) Set(key string, data interface{}, expire int64) bool {
 	return true
 }
 
-//删除缓存记录信息
+// 删除缓存记录信息
 func (self *FileCacheSt) Del(keys ...string) bool {
 	for i := 0; i < len(keys); i++ {
 		file := self.matchFile(keys[i])
@@ -142,13 +143,13 @@ func (self *FileCacheSt) Del(keys ...string) bool {
 	return true
 }
 
-//清理内存缓存记录
+// 清理内存缓存记录
 func (self *FileCacheSt) Clear() {
 	dir, _ := filepath.Abs(self.dir)
 	os.RemoveAll(dir)
 }
 
-//清理内存缓存记录
+// 清理内存缓存记录
 func (self *FileCacheSt) Close() {
 	//todo 释放资源
 }

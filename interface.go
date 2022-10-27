@@ -1,8 +1,8 @@
 package orm
 
 import (
+	"git.ziniao.com/webscraper/go-orm/cache"
 	"github.com/jmoiron/sqlx"
-	"github.com/leicc520/go-orm/cache"
 )
 
 type IFModel interface {

@@ -145,8 +145,8 @@ model配置主/从数据库的获取配置的key信息，update/inster/delete �
 
 	package main
 	import (
-		"github.com/leicc520/go-orm"
-		"github.com/leicc520/go-orm/cache"
+		"git.ziniao.com/webscraper/go-orm"
+		"git.ziniao.com/webscraper/go-orm/cache"
 	)
 	func main() {
 		cacheSt := cache.CacheConfigSt{"redis", "redis://:@127.0.0.1:6379/1"}

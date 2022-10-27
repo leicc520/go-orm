@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
-	
-	"github.com/leicc520/go-orm/log"
+
+	"git.ziniao.com/webscraper/go-orm/log"
 )
 
 const (
@@ -64,40 +64,40 @@ type whereSt struct {
 	logical string
 }
 
-//语句的组成的结构
+// 语句的组成的结构
 type mysqlSt struct {
-	index int64
+	index  int64
 	driver string
-	sql map[string]interface{}
-	marks []interface{}
+	sql    map[string]interface{}
+	marks  []interface{}
 }
 
-//初始化一个语句结构体对象
+// 初始化一个语句结构体对象
 func NewMysql() *mysqlSt {
 	mySql := (new(mysqlSt)).Reset()
 	return mySql
 }
 
-//设置数据库的的驱动引擎
+// 设置数据库的的驱动引擎
 func (q *mysqlSt) SetDriver(driver string) *mysqlSt {
 	q.driver = driver
 	return q
 }
 
-//获取数据库设置的驱动引擎
+// 获取数据库设置的驱动引擎
 func (q *mysqlSt) GetDriver() string {
 	return q.driver
 }
 
-//结构体初始化内部结构
+// 结构体初始化内部结构
 func (q *mysqlSt) Reset() *mysqlSt {
 	q.index = 1 //重置绑定参数
-	q.sql   = make(map[string]interface{})
+	q.sql = make(map[string]interface{})
 	q.marks = make([]interface{}, 0)
 	return q
 }
 
-//清除语句的部分信息
+// 清除语句的部分信息
 func (q *mysqlSt) Clear(parts ...string) *mysqlSt {
 	if len(parts) > 0 {
 		for _, part := range parts {
@@ -115,7 +115,7 @@ func (q *mysqlSt) Clear(parts ...string) *mysqlSt {
 	return q
 }
 
-//设置查询的表信息
+// 设置查询的表信息
 func (q *mysqlSt) Table(table ...string) *mysqlSt {
 	var tables []tableSt
 	if _, ok := q.sql["table"]; !ok {
@@ -134,19 +134,19 @@ func (q *mysqlSt) Table(table ...string) *mysqlSt {
 	return q
 }
 
-//设置要查询的字段信息
+// 设置要查询的字段信息
 func (q *mysqlSt) Field(fields string) *mysqlSt {
 	q.sql["field"] = fields
 	return q
 }
 
-//设置要冲突字段信息
+// 设置要冲突字段信息
 func (q *mysqlSt) ConflictField(field string) *mysqlSt {
 	q.sql["conflict"] = field
 	return q
 }
 
-//设置GroupBy分组
+// 设置GroupBy分组
 func (q *mysqlSt) GroupBy(fields ...string) *mysqlSt {
 	var groups []string
 	if _, ok := q.sql["groupby"]; !ok {
@@ -159,19 +159,19 @@ func (q *mysqlSt) GroupBy(fields ...string) *mysqlSt {
 	return q
 }
 
-//设置GroupBy Having;一条语句只能设置一次
+// 设置GroupBy Having;一条语句只能设置一次
 func (q *mysqlSt) Having(having string) *mysqlSt {
 	q.sql["having"] = having
 	return q
 }
 
-//设置GroupBy Having;一条语句只能设置一次
+// 设置GroupBy Having;一条语句只能设置一次
 func (q *mysqlSt) ForceIndex(index string) *mysqlSt {
-	q.sql["index"] = " FORCE INDEX("+index+")"
+	q.sql["index"] = " FORCE INDEX(" + index + ")"
 	return q
 }
 
-//设置排序信息 允许多列排序
+// 设置排序信息 允许多列排序
 func (q *mysqlSt) OrderBy(field, dir string) *mysqlSt {
 	var orderby []string
 	if _, ok := q.sql["orderby"]; !ok {
@@ -184,7 +184,7 @@ func (q *mysqlSt) OrderBy(field, dir string) *mysqlSt {
 	return q
 }
 
-//更新字段值设置
+// 更新字段值设置
 func (q *mysqlSt) Value(field string, value interface{}, args ...string) *mysqlSt {
 	var values []valueSt
 	if _, ok := q.sql["value"]; !ok {
@@ -201,7 +201,7 @@ func (q *mysqlSt) Value(field string, value interface{}, args ...string) *mysqlS
 	return q
 }
 
-//更新字段值设置
+// 更新字段值设置
 func (q *mysqlSt) Duplicate(field string, value interface{}, args ...string) *mysqlSt {
 	var values []valueSt
 	if _, ok := q.sql["duplicate"]; !ok {
@@ -218,12 +218,12 @@ func (q *mysqlSt) Duplicate(field string, value interface{}, args ...string) *my
 	return q
 }
 
-//批量请求参数的处理业务逻辑
-func (self *mysqlSt) UseCond(fields []string, value interface{}, options... string) *mysqlSt {
+// 批量请求参数的处理业务逻辑
+func (self *mysqlSt) UseCond(fields []string, value interface{}, options ...string) *mysqlSt {
 	elemSt := reflect.ValueOf(value).Elem()
-	data   := SqlMap{}
+	data := SqlMap{}
 	for _, field := range fields {
-		field  = CamelCase(field) //转换成驼峰模式
+		field = CamelCase(field) //转换成驼峰模式
 		valSt := elemSt.FieldByName(field)
 		if !valSt.IsValid() || valSt.IsZero() {
 			continue
@@ -244,8 +244,8 @@ func (self *mysqlSt) UseCond(fields []string, value interface{}, options... stri
 	return self
 }
 
-//批量请求参数的处理业务逻辑 相同字段隐射到同一个东西
-func (self *mysqlSt) UseBatch(fields []string, value interface{}, options... string) *mysqlSt {
+// 批量请求参数的处理业务逻辑 相同字段隐射到同一个东西
+func (self *mysqlSt) UseBatch(fields []string, value interface{}, options ...string) *mysqlSt {
 	if len(fields) == 1 { //大于0个字段的情况
 		for _, field := range fields {
 			self.Where(field, value, options...)
@@ -260,7 +260,7 @@ func (self *mysqlSt) UseBatch(fields []string, value interface{}, options... str
 	return self
 }
 
-//添加条件配置
+// 添加条件配置
 func (q *mysqlSt) Where(field string, value interface{}, args ...string) *mysqlSt {
 	var wheres []whereSt
 	if _, ok := q.sql["where"]; !ok {
@@ -287,10 +287,10 @@ func (q *mysqlSt) Where(field string, value interface{}, args ...string) *mysqlS
 	} else if Alen == 3 {
 		opt, ftype, logical = args[0], args[1], args[2]
 	}
-	if opt == OP_LIKE {//针对like的情况做特殊逻辑处理
+	if opt == OP_LIKE { //针对like的情况做特殊逻辑处理
 		tmpStr := fmt.Sprintf("%v", value)
 		if !strings.HasPrefix(tmpStr, "%") && !strings.HasSuffix(tmpStr, "%") {
-			value = "%"+tmpStr+"%" //处理like的业务请求
+			value = "%" + tmpStr + "%" //处理like的业务请求
 		}
 	}
 	wheres = append(wheres, whereSt{name: field, value: value, opt: opt, ftype: ftype, logical: logical})
@@ -298,7 +298,7 @@ func (q *mysqlSt) Where(field string, value interface{}, args ...string) *mysqlS
 	return q
 }
 
-//获取查询的where数据信息
+// 获取查询的where数据信息
 func (q *mysqlSt) GetWheres() string {
 	var wheres []whereSt
 	if _, ok := q.sql["where"]; !ok {
@@ -318,25 +318,25 @@ func (q *mysqlSt) GetWheres() string {
 			astr = append(astr, fmt.Sprintf("%v", sitem.value))
 		}
 	}
-	if _, ok := q.sql["orderby"]; ok {//添加排序 否则缓存不对
+	if _, ok := q.sql["orderby"]; ok { //添加排序 否则缓存不对
 		items, _ := q.sql["orderby"].([]string)
 		astr = append(astr, strings.Join(items, ","))
 	}
-	if _, ok := q.sql["having"]; ok {//添加分组条件
+	if _, ok := q.sql["having"]; ok { //添加分组条件
 		items, _ := q.sql["orderby"].(string)
 		astr = append(astr, items)
 	}
-	if _, ok := q.sql["groupby"]; ok {//添加分组处理
+	if _, ok := q.sql["groupby"]; ok { //添加分组处理
 		items, _ := q.sql["groupby"].([]string)
 		astr = append(astr, strings.Join(items, ","))
 	}
 	return strings.Join(astr, "")
 }
 
-//解析表结构信息
+// 解析表结构信息
 func (q *mysqlSt) sqlTable(isalias bool) string {
 	sql := ""
-	tables:= q.sql["table"].([]tableSt)
+	tables := q.sql["table"].([]tableSt)
 	for _, table := range tables {
 		if table.alias != "" && isalias {
 			table.name = fmt.Sprintf("%s %s %s", table.name, OP_AS, table.alias)
@@ -344,7 +344,7 @@ func (q *mysqlSt) sqlTable(isalias bool) string {
 		if table.on != "" {
 			sql += fmt.Sprintf(" LEFT JOIN %s ON (%s)", table.name, table.on)
 		} else if sql == "" {
-			sql  = table.name
+			sql = table.name
 		} else {
 			sql += fmt.Sprintf(" ,%s", table.name)
 		}
@@ -352,7 +352,7 @@ func (q *mysqlSt) sqlTable(isalias bool) string {
 	return sql
 }
 
-//获取绑定变量的处理逻辑
+// 获取绑定变量的处理逻辑
 func (q *mysqlSt) sqlBindSign() string {
 	signer := "?"
 	if q.driver == POSTGRES {
@@ -362,7 +362,7 @@ func (q *mysqlSt) sqlBindSign() string {
 	return signer
 }
 
-//适配不同的数据库引擎适配offset/limit
+// 适配不同的数据库引擎适配offset/limit
 func (q *mysqlSt) sqlOffsetLimit(offset, limit int64) string {
 	if q.driver == POSTGRES {
 		return fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
@@ -371,10 +371,10 @@ func (q *mysqlSt) sqlOffsetLimit(offset, limit int64) string {
 	}
 }
 
-//获取字段使用引号处理逻辑
+// 获取字段使用引号处理逻辑
 func (q *mysqlSt) sqlFieldQuotes(field string) string {
 	ok, err := regexp.MatchString("^[\\da-zA-Z_]+$", field)
-	if !ok || err != nil {//带有特殊字符的直接跳过
+	if !ok || err != nil { //带有特殊字符的直接跳过
 		return field
 	}
 	if q.driver == POSTGRES {
@@ -383,9 +383,9 @@ func (q *mysqlSt) sqlFieldQuotes(field string) string {
 	return fmt.Sprintf("`%s`", field)
 }
 
-//解析Update设置值语句
+// 解析Update设置值语句
 func (q *mysqlSt) sqlUpdateValue(values []valueSt) string {
-	sliceSql:= make([]string, len(values))
+	sliceSql := make([]string, len(values))
 	for idx, val := range values {
 		if val.ftype == DT_SQL || val.ftype == OP_SQL {
 			sliceSql[idx] = fmt.Sprintf("%s = (%s)", q.sqlFieldQuotes(val.name), val.value)
@@ -397,7 +397,7 @@ func (q *mysqlSt) sqlUpdateValue(values []valueSt) string {
 	return strings.Join(sliceSql, ",")
 }
 
-//解析插入Insert语句的设置值语句
+// 解析插入Insert语句的设置值语句
 func (q *mysqlSt) sqlInsertValue() string {
 	values := q.sql["value"].([]valueSt)
 	valstr := make([]string, len(values))
@@ -405,12 +405,12 @@ func (q *mysqlSt) sqlInsertValue() string {
 	for idx, val := range values {
 		fields[idx] = q.sqlFieldQuotes(val.name)
 		valstr[idx] = q.sqlBindSign()
-		q.marks  = append(q.marks, val.value)
+		q.marks = append(q.marks, val.value)
 	}
 	return fmt.Sprintf("(%s)VALUES(%s)", strings.Join(fields, ","), strings.Join(valstr, ","))
 }
 
-//执行in查询占位符的处理逻辑
+// 执行in查询占位符的处理逻辑
 func (q *mysqlSt) sliceIn(where *whereSt, list []interface{}) string {
 	arrPos := make([]string, len(list))
 	for idx, val := range list {
@@ -420,7 +420,7 @@ func (q *mysqlSt) sliceIn(where *whereSt, list []interface{}) string {
 	return fmt.Sprintf("%s %s (%s)", q.sqlFieldQuotes(where.name), where.opt, strings.Join(arrPos, ","))
 }
 
-//解析Where条件设置语句
+// 解析Where条件设置语句
 func (q *mysqlSt) sqlWhere() string {
 	whereSql := ""
 	if _, ok := q.sql["where"]; !ok {
@@ -428,7 +428,7 @@ func (q *mysqlSt) sqlWhere() string {
 	}
 	//开始解析
 	wheres := q.sql["where"].([]whereSt)
-	conds  := make([]string, 0)
+	conds := make([]string, 0)
 	logical := false
 	for _, where := range wheres {
 		upName := strings.ToUpper(where.name)
@@ -447,16 +447,16 @@ func (q *mysqlSt) sqlWhere() string {
 				if val, ok := where.value.(string); ok {
 					vals := strings.SplitN(val, ",", 2)
 					if len(vals) == 2 {
-						conds   = append(conds, fmt.Sprintf("(%s %s %s AND %s)",
+						conds = append(conds, fmt.Sprintf("(%s %s %s AND %s)",
 							q.sqlFieldQuotes(where.name), where.opt, q.sqlBindSign(), q.sqlBindSign()))
 						q.marks = append(q.marks, vals[0], vals[1])
 					}
 				}
 			case OP_IN, OP_NOTIN:
 				if val, ok := where.value.(string); ok {
-					conds   = append(conds, fmt.Sprintf("%s %s (%s)", q.sqlFieldQuotes(where.name), where.opt, val))
+					conds = append(conds, fmt.Sprintf("%s %s (%s)", q.sqlFieldQuotes(where.name), where.opt, val))
 				} else if val, ok := where.value.([]interface{}); ok {
-					conds   = append(conds, q.sliceIn(&where, val))
+					conds = append(conds, q.sliceIn(&where, val))
 				} else {
 					valueOf := reflect.ValueOf(where.value)
 					if valueOf.Kind() == reflect.Slice && !valueOf.IsNil() {
@@ -464,19 +464,19 @@ func (q *mysqlSt) sqlWhere() string {
 						for idx := 0; idx < valueOf.Len(); idx++ {
 							valSlice[idx] = valueOf.Index(idx).Interface()
 						}
-						conds   = append(conds, q.sliceIn(&where, valSlice))
+						conds = append(conds, q.sliceIn(&where, valSlice))
 					} else {
 						panic("sql query in params error")
 					}
 				}
 			case OP_REGEXP:
 				if val, ok := where.value.(string); ok {
-					conds   = append(conds, fmt.Sprintf("%s %s %s", q.sqlFieldQuotes(where.name), where.opt, q.sqlBindSign()))
+					conds = append(conds, fmt.Sprintf("%s %s %s", q.sqlFieldQuotes(where.name), where.opt, q.sqlBindSign()))
 					q.marks = append(q.marks, val)
 				}
 			case OP_FULLTEXT:
 				if val, ok := where.value.(string); ok {
-					conds   = append(conds, fmt.Sprintf("MATCH(%s) against(%s)", where.name, q.sqlBindSign()))
+					conds = append(conds, fmt.Sprintf("MATCH(%s) against(%s)", where.name, q.sqlBindSign()))
 					q.marks = append(q.marks, val)
 				}
 			case OP_SQL:
@@ -500,17 +500,17 @@ func (q *mysqlSt) sqlWhere() string {
 	return whereSql
 }
 
-//设定插入的时候执行replace into
+// 设定插入的时候执行replace into
 func (q *mysqlSt) SetIsReplace(isReplace bool) *mysqlSt {
 	q.sql["is_replace"] = isReplace
 	return q
 }
 
-//获取语句最终拼凑的SQL语句
+// 获取语句最终拼凑的SQL语句
 func (q *mysqlSt) AsSql(mode string) string {
 	q.index = 1
 	q.marks = make([]interface{}, 0)
-	query  := ""
+	query := ""
 	switch strings.ToLower(mode) {
 	case "select":
 		fields, ok := q.sql["field"].(string)
@@ -518,7 +518,7 @@ func (q *mysqlSt) AsSql(mode string) string {
 			fields = "*"
 		}
 		index, ok := q.sql["index"].(string)
-		if !ok && fields != "" {//
+		if !ok && fields != "" { //
 			index = ""
 		}
 		query = "SELECT " + fields + " FROM " + q.sqlTable(true) + index + q.sqlWhere()
@@ -542,7 +542,7 @@ func (q *mysqlSt) AsSql(mode string) string {
 			}
 		}
 	case "update":
-		values  := q.sql["value"].([]valueSt)
+		values := q.sql["value"].([]valueSt)
 		query = "UPDATE " + q.sqlTable(false) + " SET " +
 			q.sqlUpdateValue(values) + q.sqlWhere()
 	case "insert":
@@ -550,16 +550,16 @@ func (q *mysqlSt) AsSql(mode string) string {
 		if tmp, ok := q.sql["is_replace"]; ok && tmp.(bool) {
 			query = "REPLACE "
 		}
-		query+= "INTO " + q.sqlTable(false) + q.sqlInsertValue()
+		query += "INTO " + q.sqlTable(false) + q.sqlInsertValue()
 		if _, ok := q.sql["duplicate"]; ok {
 			values := q.sql["duplicate"].([]valueSt)
-			query  += q.sqlDuplicateUpdate(values)
+			query += q.sqlDuplicateUpdate(values)
 		}
 	case "delete":
 		query = "DELETE FROM " + q.sqlTable(false) + q.sqlWhere()
 	}
 	if IsShowSql {
-		if IsDebug {//输出sql语句
+		if IsDebug { //输出sql语句
 			fmt.Println(q.RepSQL(query))
 		}
 		log.Write(log.INFO, q.RepSQL(query))
@@ -567,17 +567,17 @@ func (q *mysqlSt) AsSql(mode string) string {
 	return query
 }
 
-//出现唯一性约束失败的情况 执行更新操作
+// 出现唯一性约束失败的情况 执行更新操作
 func (q *mysqlSt) sqlDuplicateUpdate(values []valueSt) string {
 	if q.driver != POSTGRES {
-		return " ON DUPLICATE KEY UPDATE "+q.sqlUpdateValue(values)
+		return " ON DUPLICATE KEY UPDATE " + q.sqlUpdateValue(values)
 	} else {
 		field, _ := q.sql["conflict"].(string)
-		return " ON CONFLICT ("+q.sqlFieldQuotes(field)+") DO UPDATE SET "+q.sqlUpdateValue(values)
+		return " ON CONFLICT (" + q.sqlFieldQuotes(field) + ") DO UPDATE SET " + q.sqlUpdateValue(values)
 	}
 }
 
-//获取sql的输出出来逻辑
+// 获取sql的输出出来逻辑
 func (q *mysqlSt) repSQLPrepare(sql string) string {
 	reg, err := regexp.Compile("\\$[\\d]+")
 	if err == nil && reg != nil {
@@ -586,7 +586,7 @@ func (q *mysqlSt) repSQLPrepare(sql string) string {
 	return sql
 }
 
-//替换绑定变量到SQL当中处理
+// 替换绑定变量到SQL当中处理
 func (q *mysqlSt) RepSQL(sql string) string {
 	if q.driver == POSTGRES {
 		sql = q.repSQLPrepare(sql)
@@ -595,11 +595,11 @@ func (q *mysqlSt) RepSQL(sql string) string {
 		lStr, ok := mark.(string)
 		if !ok {
 			lStr = fmt.Sprint(mark)
-		} else {//拼接上引号
-			lStr = "'"+lStr+"'"
+		} else { //拼接上引号
+			lStr = "'" + lStr + "'"
 		}
-		lStr = strings.ReplaceAll(lStr,"?", "¤")
-		sql  = strings.Replace(sql, "?", lStr, 1)
+		lStr = strings.ReplaceAll(lStr, "?", "¤")
+		sql = strings.Replace(sql, "?", lStr, 1)
 	}
 	if strings.Index(sql, "¤") != -1 {
 		sql = strings.ReplaceAll(sql, "¤", "?")

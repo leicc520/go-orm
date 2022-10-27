@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/leicc520/go-orm/log"
-	"github.com/leicc520/go-orm/sqlmap"
+	"git.ziniao.com/webscraper/go-orm/log"
+	"git.ziniao.com/webscraper/go-orm/sqlmap"
 )
 
 type SqlString string
@@ -15,24 +15,24 @@ type SqlMap map[string]interface{}
 type SqlMapSliceSt []SqlMap
 type SqlTime time.Time
 
-//格式化输出日期 --实现数据库的Value接口
+// 格式化输出日期 --实现数据库的Value接口
 func (t SqlTime) Value() (driver.Value, error) {
 	return time.Time(t).Format(DATEZONEFormat), nil
 }
 
-//格式化输出日期
+// 格式化输出日期
 func (t SqlTime) String() string {
 	return time.Time(t).Format(DATEZONEFormat)
 }
 
-//清理列表缓存的策略
-func (s SqlMapSliceSt) Clear()  {
+// 清理列表缓存的策略
+func (s SqlMapSliceSt) Clear() {
 	for _, item := range s {
 		item.Clear()
 	}
 }
 
-//map 直接转成结构体返回
+// map 直接转成结构体返回
 func (s SqlMap) ToStruct(stPtr interface{}) error {
 	if s == nil || len(s) < 1 {
 		return errors.New("sqlmap to struct data is nil")
@@ -44,7 +44,7 @@ func (s SqlMap) ToStruct(stPtr interface{}) error {
 	return nil
 }
 
-//格式化处理逻辑
+// 格式化处理逻辑
 func (s SqlMap) Merge(m SqlMap) SqlMap {
 	for key, val := range m {
 		//相同key的map直接覆盖合并
@@ -61,14 +61,14 @@ func (s SqlMap) Merge(m SqlMap) SqlMap {
 	return s
 }
 
-//删除执行的key信息
-func (s SqlMap) Delete(keys... string) {
+// 删除执行的key信息
+func (s SqlMap) Delete(keys ...string) {
 	for _, key := range keys {
 		delete(s, key)
 	}
 }
 
-//清空sqlmap
+// 清空sqlmap
 func (s SqlMap) Clear() {
 	for key, val := range s {
 		if tmp, ok := val.(SqlMap); ok {
@@ -78,7 +78,7 @@ func (s SqlMap) Clear() {
 	}
 }
 
-//判断是否为空对象
+// 判断是否为空对象
 func (s SqlMap) IsNil() bool {
 	if s != nil && len(s) > 0 {
 		return false
@@ -86,7 +86,7 @@ func (s SqlMap) IsNil() bool {
 	return true
 }
 
-//强行转成整数
+// 强行转成整数
 func (s SqlString) ToInt64() int64 {
 	if s == "" {
 		return 0
@@ -99,7 +99,7 @@ func (s SqlString) ToInt64() int64 {
 	}
 }
 
-//强行转成整数
+// 强行转成整数
 func (s SqlString) ToFloat64() float64 {
 	if s == "" {
 		return 0.0
@@ -112,7 +112,7 @@ func (s SqlString) ToFloat64() float64 {
 	}
 }
 
-//强行转成整数
+// 强行转成整数
 func (s SqlString) ToString() string {
 	return string(s)
 }

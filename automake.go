@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/leicc520/go-orm/log"
+	"git.ziniao.com/webscraper/go-orm/log"
 )
 
 type fieldSt struct {
@@ -285,7 +285,7 @@ func buildModels(packStr, dir, dbmaster, dbslaver string, model *modelSt) {
 		lstr = strings.Replace(lstr, "{dbslot}", "0", -1)
 	}
 	os.Remove(gofile)
-	ioutil.WriteFile(gofile, []byte(lstr), 0777)
+	os.WriteFile(gofile, []byte(lstr), 0777)
 	log.Write(log.DEBUG, "db "+dbmaster+" create models "+model.table+" build success!")
 }
 
@@ -293,7 +293,7 @@ var Gmodelstpl = `package {package}
 
 import (
 	"reflect"{time}
-	"github.com/leicc520/go-orm"
+	"git.ziniao.com/webscraper/go-orm"
 )
 
 type {struct} struct {

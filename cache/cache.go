@@ -1,9 +1,9 @@
 package cache
 
 import (
+	"git.ziniao.com/webscraper/go-orm/log"
+	"git.ziniao.com/webscraper/go-orm/sqlmap"
 	jsonIter "github.com/json-iterator/go"
-	"github.com/leicc520/go-orm/log"
-	"github.com/leicc520/go-orm/sqlmap"
 )
 
 type ErrNotExists struct {
@@ -32,8 +32,8 @@ type CacheConfigSt struct {
 }
 
 type CacheItemSt struct {
-	Expire int64 `json:"expire" bson:"expire"`
-	Data interface{} `json:"data" bson:"data"`
+	Expire int64       `json:"expire" bson:"expire"`
+	Data   interface{} `json:"data" bson:"data"`
 }
 
 //interface 重新解析到对象

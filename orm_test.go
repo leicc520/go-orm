@@ -12,8 +12,8 @@ func TestMysql(t *testing.T) {
 	sqlSt := NewMysql().SetDriver(POSTGRES)
 
 	args := struct {
-		Name string
-		Tag string
+		Name  string
+		Tag   string
 		Ename string
 	}{"leicc", "A", "xxx"}
 
@@ -47,9 +47,9 @@ func TestQuery(t *testing.T) {
 		return
 	}
 	fields := map[string]reflect.Kind{
-		"id":		reflect.Int64,	//账号id
-		"desc":		reflect.String,	//第三方Openid
-		"idx":		reflect.Int8,	//性别 1-男 2-女
+		"id":   reflect.Int64,  //账号id
+		"desc": reflect.String, //第三方Openid
+		"idx":  reflect.Int8,   //性别 1-男 2-女
 	}
 	query := NewQuery(fields).SetDb(db)
 	query.SetDriver(POSTGRES).Reset().Table("demo").Where("id", 1, OP_GT).Where("idx", "2,5", OP_BETWEEN).Where("desc", "%demo%", OP_LIKE).GroupBy("id").Field("id,\"desc\",idx")
@@ -57,12 +57,12 @@ func TestQuery(t *testing.T) {
 	t.Log(data)
 
 	query.Reset().Table("demo").Duplicate("desc", "demov99999").ConflictField("idx")
-	lastid := query.SetAutoIncr("id").Insert(SqlMap{"desc":"demov3333", "idx":11}, false)
+	lastid := query.SetAutoIncr("id").Insert(SqlMap{"desc": "demov3333", "idx": 11}, false)
 	fmt.Println(lastid)
 
 	query.Reset().Table("demo").Where("id", 12)
-	nrow := query.Update(SqlMap{"desc":"demo888", "idx":99})
-    fmt.Println(nrow)
+	nrow := query.Update(SqlMap{"desc": "demo888", "idx": 99})
+	fmt.Println(nrow)
 
 	query.Reset().Table("demo").Where("idx", "", OP_ISNULL)
 	nrow = query.Delete()
@@ -70,52 +70,53 @@ func TestQuery(t *testing.T) {
 	return
 
 	user := struct {
-		Id 	int64 `json:"id"`
+		Id   int64  `json:"id"`
 		Desc string `json:"desc"`
-		Idx int64 `json:"idx"`
+		Idx  int64  `json:"idx"`
 	}{}
 	err = query.GetRow("").ToStruct(&user)
 	t.Log(err, user)
 
 	query.Clear().Table("demo").Field("id,\"desc\",idx")
-	list := query.GetList("", 0 , 2)
+	list := query.GetList("", 0, 2)
 	t.Log(list)
 
-	query.Clear().Table("demo").Field("id").Where("id", []int64{1,2,3,4}, OP_IN)
+	query.Clear().Table("demo").Field("id").Where("id", []int64{1, 2, 3, 4}, OP_IN)
 	column := query.GetColumn("", 0, -1)
 	t.Log(column)
 
-	query.Clear().Table("demo").Field("id as \"key\", \"desc\" as \"val\"").Where("id", []int64{1,2,3,4}, OP_IN)
+	query.Clear().Table("demo").Field("id as \"key\", \"desc\" as \"val\"").Where("id", []int64{1, 2, 3, 4}, OP_IN)
 	asmap := query.GetMap("", 0, -1)
 	t.Log(asmap)
 
-	query.Clear().Table("demo").Field("id,\"desc\",idx").Where("id", []int64{1,2,3,4}, OP_IN)
+	query.Clear().Table("demo").Field("id,\"desc\",idx").Where("id", []int64{1, 2, 3, 4}, OP_IN)
 	nsmap := query.NameMap("", "id", 0, -1)
 	t.Log(nsmap)
 
 }
 
-/****************************************************************************************
-	在这个类是动态生成，
- */
+/*
+***************************************************************************************
+在这个类是动态生成，
+*/
 type demoTest struct {
 	*ModelSt
 }
 
-//这里的dbPool
+// 这里的dbPool
 func newDemoUser() *demoTest {
 	fields := map[string]reflect.Kind{
-		"id":		reflect.Int64,	//账号id
-		"desc":		reflect.String,	//第三方Openid
-		"idx":		reflect.Int,	//最后操作时间
+		"id":   reflect.Int64,  //账号id
+		"desc": reflect.String, //第三方Openid
+		"idx":  reflect.Int,    //最后操作时间
 	}
-	args  := map[string]interface{}{
-		"table":		"demo",
-		"orgtable":		"demo",
-		"prikey":		"id",
-		"dbmaster":		"dbmaster",
-		"dbslaver":		"dbslaver",
-		"slot":			10,
+	args := map[string]interface{}{
+		"table":    "demo",
+		"orgtable": "demo",
+		"prikey":   "id",
+		"dbmaster": "dbmaster",
+		"dbslaver": "dbslaver",
+		"slot":     10,
 	}
 	data := &demoTest{&ModelSt{}}
 	data.Init(&GdbPoolSt, args, fields)
@@ -129,20 +130,20 @@ func TestModel(t *testing.T) {
 	InitDBPoolSt().Set(master.SKey, &master)
 	InitDBPoolSt().Set(slaver.SKey, &slaver)
 
-	CreatePGSQLModels(master.SKey, slaver.SKey, "../models/sys")
+	CreatePGSQLModels(master.SKey, slaver.SKey, "../models/sys", "")
 	return
 	sorm := newDemoUser()
 
 	table := sorm.DBTables()
 	fmt.Println(table)
 	//sorm.SetModTable(105).NewOne(SqlMap{"desc":"aaaa", "idx":999}, nil)
-	sorm.SetYmTable(DATEYMDFormat).NewOne(SqlMap{"desc":"aaaa", "idx":999}, nil)
+	sorm.SetYmTable(DATEYMDFormat).NewOne(SqlMap{"desc": "aaaa", "idx": 999}, nil)
 	return
 
 	user := struct {
-		Id 	int64 `json:"id"`
+		Id   int64  `json:"id"`
 		Desc string `json:"desc"`
-		Idx int64 `json:"idx"`
+		Idx  int64  `json:"idx"`
 	}{}
 	errv3 := sorm.GetItem(func(st *QuerySt) string {
 		st.Where("id", 111)
@@ -169,8 +170,8 @@ func TestModel(t *testing.T) {
 
 	return
 	for idx := 0; idx < 100; idx++ {
-		nrow:= sorm.NewOne(SqlMap{
-			"desc":"1111111", "idx":idx+99,
+		nrow := sorm.NewOne(SqlMap{
+			"desc": "1111111", "idx": idx + 99,
 		}, nil)
 		fmt.Println(nrow)
 	}
@@ -192,12 +193,11 @@ func TestModel(t *testing.T) {
 	ids := sorm.GetColumn(1, 5, nil, "DISTINCT id")
 	fmt.Println(ids)
 
-
 	return
 	data := sorm.GetOne(24)
 	fmt.Println(data)
 	sorm.Query().ConflictField("idx")
-	id := sorm.NewOne(SqlMap{"desc":"xxxxx", "idx":88}, SqlMap{"desc": "vvvvvvvvv"})
+	id := sorm.NewOne(SqlMap{"desc": "xxxxx", "idx": 88}, SqlMap{"desc": "vvvvvvvvv"})
 	fmt.Println(id)
 	id2 := sorm.NewOneFromHandler(func(st *QuerySt) *QuerySt {
 		st.Value("desc", "xxxxxxxxx").Value("idx", 88)
@@ -211,7 +211,7 @@ func TestModel(t *testing.T) {
 
 	nsize := sorm.GetTotal(nil, "COUNT(1)")
 	fmt.Println(nsize)
-	
+
 	list := sorm.GetList(1, 10, func(st *QuerySt) string {
 		st.Where("idx", "", OP_ISNOTNULL)
 		st.Where("id", 10, OP_GT)
@@ -220,4 +220,3 @@ func TestModel(t *testing.T) {
 	fmt.Println(list)
 
 }
-
