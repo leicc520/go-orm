@@ -70,7 +70,7 @@ func (p *XDBPoolSt) Get(skey string) *sqlx.DB {
 
 // 获取数据库连接句柄
 func (p *XDBPoolSt) Set(skey string, config *DbConfig) *sqlx.DB {
-	skey = strings.ToLower(skey)
+	skey = SnakeCase(skey) //大小写转成下划线
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.config[skey] = config
@@ -102,15 +102,17 @@ func (p *XDBPoolSt) Release() {
 
 /*
 *
+
   - 数据库的配置 通过配置导入，配置必须传结构体指针 示例
+
   - @confPtr *Config 配置对象的指针变量
 
-	type Config struct {
-		...
-		Redis  cache.RedisConfig 	`yaml:"redis"`
-		DbMaster  DbConfig 			`yaml:"dbmaster"`
-		DbSlaver  DbConfig 			`yaml:"dbslaver"`
-	}
+    type Config struct {
+    ...
+    Redis  cache.RedisConfig 	`yaml:"redis"`
+    DbMaster  DbConfig 			`yaml:"dbmaster"`
+    DbSlaver  DbConfig 			`yaml:"dbslaver"`
+    }
 */
 func (p *XDBPoolSt) LoadDbConfig(confPtr interface{}) {
 	confValues := reflect.ValueOf(confPtr).Elem()
